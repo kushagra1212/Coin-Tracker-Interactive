@@ -1,5 +1,6 @@
 import { PerformanceEntry } from 'react-native-performance';
 
+import { InteractionManager } from 'react-native';
 export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
   if (!list) {
     return [];
@@ -43,6 +44,21 @@ export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
   return nativeMarkPerformanceList;
 };
 
+export const throttle = (func, delay) => {
+  let throttling = false;
+
+  return function (...args: any) {
+    if (!throttling) {
+      func.apply(this, args);
+
+      throttling = true;
+
+      setTimeout(() => {
+        throttling = false;
+      }, delay);
+    }
+  };
+};
 export let COINS = [];
 
 // export const COINS = [

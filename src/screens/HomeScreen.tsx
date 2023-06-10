@@ -16,7 +16,7 @@ import performance, {
   setResourceLoggingEnabled,
 } from 'react-native-performance';
 import { getNativeMarkPerformanceLogs } from '../utils';
-import CoinList from '../components/CoinList';
+import CoinList from '../components/coin/CoinList';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 setResourceLoggingEnabled(true);
 
@@ -113,7 +113,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             See Coin
           </Text>
         </TouchableOpacity> */}
-        <CoinList />
+        <CoinList navigation={navigation} />
 
         <TouchableOpacity onPress={() => handleSort('price')}>
           <Text>Sort by Price</Text>

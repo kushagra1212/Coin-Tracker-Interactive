@@ -28,8 +28,8 @@ export class Database {
           `CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, volume REAL, lastPrice REAL)`
         )
           .then(() => {
-            console.log('Table created/updated successfully');
-            resolve(null);
+            console.log(`${TABLE_NAME} Table created/updated successfully`);
+            return resolve(null);
           })
           .catch((error) => {
             console.log('Error creating table:', error);
@@ -44,16 +44,16 @@ export class Database {
       });
     });
   }
+
   private tableExists(tableName: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       db.then((tx) => {
-        const query = `SELECT name FROM sqlite_master WHERE type='table' AND name=?`;
-        tx.executeSql(
-          query,
-          [tableName],
-          (tx, result) => {
-            if (result?.rows?.length) {
-              const rowCount = result.rows.length;
+        const query = `SELECT * FROM ${tableName}`;
+        console.log('Checking table existence...');
+        tx.executeSql(query)
+          .then((results) => {
+            if (results[0].rows.length) {
+              const rowCount = results[0].rows.length;
               const tableExists = rowCount > 0;
               console.log(`Table ${tableName} exists: ${tableExists}`);
               resolve(tableExists);
@@ -61,33 +61,37 @@ export class Database {
               console.log('Error checking table existence:');
               resolve(false);
             }
-          },
-          (error) => {
+          })
+          .catch((error) => {
             console.log('Error checking table existence:', error);
             resolve(false);
-          }
-        );
+          });
       });
     });
   }
   private createIndexes(): Promise<void> {
     return new Promise((resolve, reject) => {
-      db.then(async (tx) => {
-        await tx.executeSql(
-          `CREATE INDEX IF NOT EXISTS idx_symbol ON ${TABLE_NAME} (symbol)`
-        );
-        await tx.executeSql(
-          `CREATE INDEX IF NOT EXISTS idx_volume ON ${TABLE_NAME} (volume)`
-        );
-        await tx.executeSql(
-          `CREATE INDEX IF NOT EXISTS idx_lastPrice ON ${TABLE_NAME} (lastPrice)`
-        );
-        console.log('Indexes created successfully');
-        resolve();
-      }).catch((err) => {
-        console.log('indexes not created', err);
-        reject(err);
-      });
+      db.then((tx) => {
+        return Promise.all([
+          tx.executeSql(
+            `CREATE INDEX IF NOT EXISTS idx_symbol ON ${TABLE_NAME} (symbol)`
+          ),
+          tx.executeSql(
+            `CREATE INDEX IF NOT EXISTS idx_volume ON ${TABLE_NAME} (volume)`
+          ),
+          tx.executeSql(
+            `CREATE INDEX IF NOT EXISTS idx_lastPrice ON ${TABLE_NAME} (lastPrice)`
+          ),
+        ]);
+      })
+        .then((res) => {
+          console.log('indexes created');
+          resolve();
+        })
+        .catch((err) => {
+          console.log('indexes not created');
+          reject(err);
+        });
     });
   }
 
@@ -96,47 +100,42 @@ export class Database {
   };
   private fetchDataAndStore(): Promise<void> {
     return new Promise((resolve, reject) => {
-      db.then((tx) => {
-        tx.executeSql(`SELECT * FROM ${TABLE_NAME}`)
-          .then((result: SQLite.ResultSet[]) => {
-            if (result[0].rows.length === 0) {
-              fetch('https://api.binance.com/api/v3/ticker/24hr')
-                .then((response) => response.json())
-                .then((data: DataItem[]) => {
-                  const filteredData = data.filter((item) =>
-                    item.symbol.endsWith('USDT')
-                  );
-                  const updateData = [];
-                  const size = filteredData.length;
-                  for (let i = 0; i < size; i++) {
-                    if (this.isValidElement(filteredData[i]))
-                      updateData.push(filteredData[i]);
-                  }
-                  this.insertData(updateData)
-                    .then(() => {
-                      resolve();
-                    })
-                    .catch((error) => {
-                      console.log('Error inserting data:', error);
-                      reject(error);
-                    });
-                })
-                .catch((error) => {
-                  console.log('Error fetching data:', error);
-                  reject(error);
-                });
-            } else {
-              // tx.executeSql(`DROP table ${TABLE_NAME}`)
-              //   .then((res) => console.log('Droped', res))
-              //   .catch((err) => console.log(err));
-              console.log('Data already inserted');
+      console.log('fetching data using binance api...');
+      fetch('https://api.binance.com/api/v3/ticker/24hr')
+        .then((response) => response.json())
+        .then((data: DataItem[]) => {
+          const filteredData = data.filter((item) =>
+            item.symbol.endsWith('USDT')
+          );
+          const updateData = [];
+          const size = filteredData.length;
+          for (let i = 0; i < size; i++) {
+            if (this.isValidElement(filteredData[i]))
+              updateData.push(filteredData[i]);
+          }
+          console.log('data fetched successfully');
+          this.insertData(updateData)
+            .then(() => {
               resolve();
-            }
-          })
-          .catch((error) => {
-            console.log('Error fetching data:', error);
-            reject(error);
-          });
+            })
+            .catch((error) => {
+              console.log('Error inserting data:', error);
+              reject(error);
+            });
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+          reject(error);
+        });
+    });
+  }
+  public dropAllTables(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      db.then((tx) => {
+        tx.executeSql(`DROP table coins`)
+          .then(() => tx.executeSql(`DROP table time_table`))
+          .then((res) => resolve())
+          .catch((err) => reject(err));
       });
     });
   }
@@ -171,19 +170,94 @@ export class Database {
       });
     });
   }
+  private updateDateTable(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      db.then((tx) => {
+        tx.executeSql(
+          'CREATE TABLE IF NOT EXISTS time_table (id INTEGER PRIMARY KEY AUTOINCREMENT, store_time REAL)'
+        )
+          .then((res) => {
+            console.log('time_table created/updated successfully');
+            tx.executeSql('SELECT * FROM time_table WHERE id = 1')
+              .then((results: any) => {
+                if (results[0].rows.length > 0) {
+                  const storedTime = results[0].rows.item(0).store_time;
+                  const currentTime = Date.now();
+                  const timeDifference = currentTime - storedTime;
+                  if (timeDifference >= 86400000) {
+                    // 24 hours in milliseconds
+                    console.log('timeDifference', timeDifference);
+                    tx.executeSql(
+                      'UPDATE time_table SET store_time = ? WHERE id = ?',
+                      [currentTime, 1],
+                      () => {
+                        console.log('store_time updated');
+                        tx.executeSql(`DROP table ${TABLE_NAME}`)
+                          .then((res) => {
+                            console.log('Droped', res);
+                            return this.createTable()
+                              .then(() => this.createIndexes())
+                              .then(() => this.fetchDataAndStore());
+                          })
+                          .catch((err) => console.log(err))
+                          .finally(() => resolve());
 
+                        console.log('Reinitiliazing... the database');
+                      },
+                      (error: any) => {
+                        console.error('Error updating store_time:', error);
+                        resolve();
+                      }
+                    );
+                  } else {
+                    console.log(
+                      'No need to update the time_table :  less than 24 hours'
+                    );
+                    resolve();
+                  }
+                } else {
+                  const currentTime = Date.now();
+                  tx.executeSql(
+                    'INSERT INTO time_table (id, store_time) VALUES (?, ?)',
+                    [1, currentTime],
+                    () => {
+                      console.log('store_time inserted');
+                      resolve();
+                    },
+                    (error: any) => {
+                      console.error('Error inserting store_time:', error);
+                      resolve();
+                    }
+                  );
+                }
+              })
+              .catch((error) => {
+                console.error('Error retrieving store_time:', error);
+                resolve();
+              });
+          })
+          .catch((error) => {
+            console.error('Error creating time_table:', error);
+          });
+      });
+    });
+  }
   public initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.tableExists(TABLE_NAME)
         .then((isExists) => {
-          if (isExists) resolve();
-
-          return this.createTable()
-            .then(() => this.createIndexes())
-            .then(() => this.fetchDataAndStore())
-            .then(() => {
-              resolve();
-            });
+          if (isExists) {
+            return this.updateDateTable();
+          } else {
+            return this.createTable()
+              .then(() => this.createIndexes())
+              .then(() => this.fetchDataAndStore())
+              .then(() => this.updateDateTable());
+          }
+        })
+        .then(() => {
+          console.log('Done : Reinitiliazing... the database');
+          return resolve();
         })
         .catch((error) => {
           console.log('Error:', error);

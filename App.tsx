@@ -51,7 +51,9 @@ import { COINS } from './src/utils';
 
 export type RootStackParamList = {
   Home: undefined;
-  Coin: undefined;
+  Coin: {
+    coinSymbol: string;
+  };
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -65,6 +67,7 @@ function App(): JSX.Element {
   const init = async () => {
     try {
       await database.initialize();
+      // await database.dropAllTables();
     } catch (err) {
       console.log('SQLite ERROR : err');
     } finally {
@@ -75,7 +78,6 @@ function App(): JSX.Element {
     if (unmounted) return;
 
     init();
-
     return () => {
       setUnmunted(true);
     };
