@@ -21,6 +21,8 @@ import { throttle } from '../../utils';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParamListBase, useFocusEffect } from '@react-navigation/native';
 import RenderCoin from './RenderCoin';
+import LoadingComponent from './Loading';
+import RenderFooter from './RenderFooter';
 
 type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -84,7 +86,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     }
   };
 
-  const throttledOnMessage = useCallback(throttle(webSocketHandler, 1000), []);
+  const throttledOnMessage = useCallback(throttle(webSocketHandler, 2000), []);
   const handleOnViewableItemsChanged = (viewableItems: ViewToken[]) => {
     if (websocket.current) {
       let timeNow = Date.now();
@@ -209,7 +211,14 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     setScrollSymbol(symbol);
     if (websocket.current !== undefined && websocket.current) {
       console.log('closing websocket : Component CoinList');
-      websocket.current.close();
+      const removeWebSocketHandler = () => {
+        const ws = websocket.current;
+        return () => {
+          console.log('Disconnecting websocket');
+          if (ws) ws.close();
+        };
+      };
+      setTimeout(removeWebSocketHandler(), 0);
     }
     navigation.navigate('Coin', {
       coinSymbol: symbol,
@@ -242,43 +251,12 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       scrollOneItemBelow();
     }
   });
-  const LoadingComponent = () => {
-    return (
-      <View style={{}}>
-        <ActivityIndicator />
-      </View>
-    );
-  };
+
   if (initialFetchLoad) {
     return <LoadingComponent />;
   }
   const renderFooter = () => {
-    return (
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingVertical: 20,
-        }}
-      >
-        {loading ? (
-          <LoadingComponent />
-        ) : reachedEnd ? (
-          <View
-            style={{
-              display: 'flex',
-              height: 100,
-              position: 'absolute',
-              backgroundColor: 'red',
-              bottom: 0,
-              width: '100%',
-            }}
-          >
-            <Text style={{ color: 'black' }}>End of the List</Text>
-          </View>
-        ) : null}
-      </View>
-    );
+    return <RenderFooter loading={loading} reachedEnd={reachedEnd} />;
   };
   const renderItemComponent = ({ item }: { item: DataItem }) => {
     return (
