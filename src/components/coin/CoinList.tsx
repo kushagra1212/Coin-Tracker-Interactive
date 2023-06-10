@@ -42,12 +42,13 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   const [initialFetchLoad, setInitialFetchLoad] = useState<boolean>(true);
   const [loadOtherScreen, setLoadOtherScreen] = useState<boolean>(false);
   const [scrollSymbol, setScrollSymbol] = useState<string>('');
-  const windowSize = 90;
+  const windowSize = 40;
   const webSocketHandler = (
     event: WebSocketMessageEvent,
     viewableItems: ViewToken[]
   ) => {
     const message = JSON.parse(event.data);
+
     const dataMap = new Map();
     if (Array.isArray(message)) {
       for (let i = 0; i < message.length; i++) {
@@ -61,12 +62,11 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
           const { lastPrice, volume } = dataMap.get(symbol);
 
           items.push({
-            ...viewableItems[i].item,
+            symbol: symbol,
             lastPrice,
             volume,
+            prev: { ...viewableItems[i].item, prev: undefined },
           });
-        } else {
-          items.push(viewableItems[i].item);
         }
       }
       setCoins((prev) => {
@@ -76,7 +76,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
             (item) => item.symbol === newCoins[i].symbol
           );
           if (index !== -1) {
-            newCoins[i] = items[index];
+            newCoins[i] = JSON.parse(JSON.stringify(items[index]));
           }
         }
         return newCoins;
@@ -84,7 +84,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     }
   };
 
-  const throttledOnMessage = useCallback(throttle(webSocketHandler, 2000), []);
+  const throttledOnMessage = useCallback(throttle(webSocketHandler, 1000), []);
   const handleOnViewableItemsChanged = (viewableItems: ViewToken[]) => {
     if (websocket.current) {
       let timeNow = Date.now();
@@ -95,8 +95,6 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   };
   const scrollOneItemBelow = () => {
     if (flatListRef.current) {
-      const nextIndex = 1;
-      console.log(flatListRef.current.getScrollableNode(), 'flatlist state');
       const index = coins.findIndex((item) => item.symbol === scrollSymbol);
       flatListRef.current.scrollToIndex({ index: index, animated: true });
     }

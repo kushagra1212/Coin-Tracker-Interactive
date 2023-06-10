@@ -7,6 +7,7 @@ export interface DataItem {
   symbol: string;
   volume: string;
   lastPrice: string;
+  prev?: DataItem;
 }
 export interface SortBy {
   type: 'volume' | 'lastPrice';

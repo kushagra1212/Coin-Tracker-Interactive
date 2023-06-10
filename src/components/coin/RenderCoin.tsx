@@ -9,28 +9,21 @@ type props = {
 };
 const RenderCoin: React.FC<props> = React.memo(
   ({ item, handleNavigationToCoinScreen }) => {
-    const { symbol, lastPrice: initialLastPrice, volume: initialVolume } = item;
-    const [lastPrice, setLastPrice] = useState(initialLastPrice);
-    const [volume, setVolume] = useState(initialVolume);
-
-    useEffect(() => {
-      // Check if the lastPrice has changed
-      if (initialLastPrice !== lastPrice) {
-        setLastPrice(initialLastPrice);
-      }
-
-      // Check if the volume has changed
-      if (initialVolume !== volume) {
-        setVolume(initialVolume);
-      }
-    }, [initialLastPrice, initialVolume]);
+    const {
+      symbol,
+      lastPrice: initialLastPrice,
+      volume: initialVolume,
+      prev,
+    } = item;
 
     const getTextColor = (newValue: number, oldValue: number) => {
-      //console.log(newValue, oldValue);
       if (newValue > oldValue) {
         return 'green';
       } else if (newValue < oldValue) {
         return 'red';
+      }
+      if (newValue !== oldValue) {
+        console.log('new value: ', newValue, 'old value: ', oldValue);
       }
       return 'black';
     };
@@ -59,24 +52,26 @@ const RenderCoin: React.FC<props> = React.memo(
           <Text
             style={{
               color: getTextColor(
-                parseFloat(lastPrice),
-                parseFloat(initialLastPrice)
+                parseFloat(initialLastPrice),
+                parseFloat(
+                  prev === undefined ? initialLastPrice : prev.lastPrice
+                )
               ),
               flex: 1 / 3,
             }}
           >
-            {parseFloat(lastPrice).toFixed(2)}
+            {parseFloat(initialLastPrice).toFixed(2)}
           </Text>
           <Text
             style={{
               color: getTextColor(
-                parseFloat(volume),
-                parseFloat(initialVolume)
+                parseFloat(initialVolume),
+                parseFloat(prev === undefined ? initialVolume : prev.volume)
               ),
               flex: 1 / 3,
             }}
           >
-            {parseFloat(volume).toFixed(2)}
+            {parseFloat(initialVolume).toFixed(2)}
           </Text>
         </TouchableOpacity>
       </View>
