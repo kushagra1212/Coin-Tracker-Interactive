@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParamListBase } from '@react-navigation/native';
 type props = {
   item: DataItem;
-  handleNavigationToCoinScreen: (symbol: string) => void;
+  handleNavigationToCoinScreen: () => void;
 };
 const RenderCoin: React.FC<props> = React.memo(
   ({ item, handleNavigationToCoinScreen }) => {
@@ -39,7 +39,7 @@ const RenderCoin: React.FC<props> = React.memo(
       >
         <TouchableOpacity
           style={{ flex: 1 / 3, justifyContent: 'center', paddingLeft: 10 }}
-          onPress={() => handleNavigationToCoinScreen(symbol)}
+          onPress={handleNavigationToCoinScreen}
         >
           <Text
             style={{

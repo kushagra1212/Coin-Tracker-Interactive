@@ -23,6 +23,7 @@ import { ParamListBase, useFocusEffect } from '@react-navigation/native';
 import RenderCoin from './RenderCoin';
 import LoadingComponent from './Loading';
 import RenderFooter from './RenderFooter';
+import { LinearGradient } from 'react-native-svg';
 
 type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
@@ -207,8 +208,8 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       // reconnectWebSocket();
     };
   };
-  const handleNavigationToCoinScreen = (symbol: string) => {
-    setScrollSymbol(symbol);
+  const handleNavigationToCoinScreen = (item: DataItem) => {
+    setScrollSymbol(item.symbol);
     if (websocket.current !== undefined && websocket.current) {
       console.log('closing websocket : Component CoinList');
       const removeWebSocketHandler = () => {
@@ -220,8 +221,9 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       };
       setTimeout(removeWebSocketHandler(), 0);
     }
+
     navigation.navigate('Coin', {
-      coinSymbol: symbol,
+      coin: item,
     });
   };
   useEffect(() => {
@@ -262,7 +264,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     return (
       <RenderCoin
         item={item}
-        handleNavigationToCoinScreen={handleNavigationToCoinScreen}
+        handleNavigationToCoinScreen={() => handleNavigationToCoinScreen(item)}
       />
     );
   };
@@ -286,7 +288,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
             flex: 1 / 3,
           }}
           onPress={(e) => console.log('pressed')}
-          onPressIn={() => {}}
+          onPressIn={() => { }}
         >
           <Text>Symbol</Text>
         </TouchableOpacity>

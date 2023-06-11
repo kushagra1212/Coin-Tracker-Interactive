@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Dimensions,
@@ -6,16 +6,23 @@ import {
   Text,
   PanResponder,
   Animated,
+  FlatList,
+  StyleSheet,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Svg, Circle, Line } from 'react-native-svg';
 import PinchZoom from './PinchZoom';
+import { DataItem } from '../../types';
+import { COLORS, FONTS, SIZES } from '../../constants/theme';
+import Icon from 'react-native-vector-icons/AntDesign';
+type props = {
+  coin: DataItem;
+};
 
 interface ChartData {
   labels: string[];
   datasets: { data: number[] }[];
 }
-
 enum TimeRange {
   TODAY = 'TODAY',
   WEEK = 'WEEK',
@@ -27,7 +34,18 @@ enum TimeRange {
   ALL_TIME = 'ALL_TIME',
 }
 
-const CryptoLineGraph: React.FC = () => {
+const TIME_RANGE_LIST = [
+  { text: 'Today', value: TimeRange.TODAY },
+  { text: 'Week', value: TimeRange.WEEK },
+  { text: '1 Month', value: TimeRange.ONE_MONTH },
+  { text: '6 Months', value: TimeRange.SIX_MONTH },
+  { text: 'YTD', value: TimeRange.YEAR_TO_DATE },
+  { text: '1 Year', value: TimeRange.ONE_YEAR },
+  { text: '5 Years', value: TimeRange.FIVE_YEARS },
+  { text: 'All Time', value: TimeRange.ALL_TIME },
+];
+
+const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
   const [selectedMonth, setSelectedMonth] = useState<number>(3);
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
@@ -135,60 +153,132 @@ const CryptoLineGraph: React.FC = () => {
     );
   };
   const distance = new Animated.Value(100);
+  const CoinLineChartHeader = () => {
+    const formatedLastPrice = parseFloat(coin.lastPrice).toLocaleString(
+      undefined,
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }
+    );
 
-  return (
-    <PinchZoom distance={distance}>
-      <View style={{ display: 'flex', backgroundColor: 'blue' }}>
-        {/* Time Range Buttons */}
+    const currentPrice = parseFloat(coin.lastPrice);
+    const previousPrice = parseFloat(coin.prev?.lastPrice || '0');
+    const priceDiff = currentPrice - previousPrice;
+    const sign = priceDiff < 0 ? '-' : '+';
+    const priceDiffPercentage = (priceDiff / previousPrice) * 100;
+    const showChange = previousPrice !== 0;
+    const icon = priceDiff < 0 ? 'caretdown' : 'caretup';
+    const formattedVolume = parseFloat(coin.volume).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    const formattedPriceDiffPercentage = `${priceDiff
+      .toFixed(2)
+      .replace('-', '')} (${priceDiffPercentage
+      .toFixed(2)
+      .toString()
+      .replace('-', '')} %)`;
+
+    return (
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          height: 100,
+          backgroundColor: COLORS.black,
+          padding: 5,
+          paddingLeft: 15,
+        }}
+      >
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-around',
+            flex: 1,
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
           }}
         >
-          {renderTimeRangeButton(TimeRange.TODAY, 'Today')}
-          {renderTimeRangeButton(TimeRange.WEEK, 'Week')}
-          {renderTimeRangeButton(TimeRange.ONE_MONTH, '1 Month')}
-          {renderTimeRangeButton(TimeRange.SIX_MONTH, '6 Months')}
-          {renderTimeRangeButton(TimeRange.YEAR_TO_DATE, 'Year to Date')}
-          {renderTimeRangeButton(TimeRange.ONE_YEAR, '1 Year')}
-          {renderTimeRangeButton(TimeRange.FIVE_YEARS, '5 Years')}
-          {renderTimeRangeButton(TimeRange.ALL_TIME, 'All Time')}
+          <Text style={styles.header_text}>
+            {coin.symbol.replace('USDT', '')} 1 = $ {formatedLastPrice}
+          </Text>
+          {showChange ? (
+            <Text
+              style={[
+                {
+                  color: COLORS.white,
+                  fontWeight: '700',
+                },
+                FONTS.body3,
+              ]}
+            >
+              <Icon
+                name={icon}
+                size={20}
+                color={sign === '-' ? COLORS.redPrimary : COLORS.greenPrimary}
+              />
+              {' ' + sign}
+              {formattedPriceDiffPercentage}
+            </Text>
+          ) : null}
         </View>
-        {/* Line Chart */}
-        {chartData.labels.length ? (
-          <LineChart
-            data={chartData}
-            width={Dimensions.get('window').width}
-            height={400}
-            withVerticalLines={false}
-            onDataPointClick={(data) => {
-              console.log(data);
-              setSelectedMonth(data.index);
-            }}
-            withDots={false}
-            withHorizontalLines={false}
-            chartConfig={{
-              backgroundGradientFrom: '#000000', // Black background
-              backgroundGradientTo: '#333333', // Dark gray background
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // Red line color
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White label color
-              width: Dimensions.get('window').width,
-              propsForHorizontalLabels: {
-                opacity: 0, // Hide the Y-axis line
-              },
-            }}
-            bezier
-            withOuterLines={false}
-            style={{
-              marginLeft: -16, // Adjust chart positioning to align with the X-axis labels
-              backgroundColor: 'blue',
-            }}
-          />
-        ) : null}
-        {/* Vertical Line */}
-        {/* {selectedMonth !== null && (
+      </View>
+    );
+  };
+  return (
+    <View style={{ display: 'flex', backgroundColor: 'blue' }}>
+      <CoinLineChartHeader />
+      {/* Line Chart */}
+      {chartData.labels.length ? (
+        <LineChart
+          data={chartData}
+          width={Dimensions.get('window').width}
+          height={400}
+          withVerticalLines={false}
+          onDataPointClick={(data) => {
+            console.log(data);
+            setSelectedMonth(data.index);
+          }}
+          withDots={false}
+          withHorizontalLines={false}
+          chartConfig={{
+            backgroundGradientFrom: '#000000', // Black background
+            backgroundGradientTo: '#333333', // Dark gray background
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // Red line color
+            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White label color
+            width: Dimensions.get('window').width,
+            propsForHorizontalLabels: {
+              opacity: 0, // Hide the Y-axis line
+            },
+          }}
+          bezier
+          withOuterLines={false}
+          style={{
+            marginLeft: -16, // Adjust chart positioning to align with the X-axis labels
+            backgroundColor: 'blue',
+          }}
+        />
+      ) : null}
+      {/* Time Range Buttons */}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+        }}
+      >
+        <FlatList
+          data={TIME_RANGE_LIST}
+          renderItem={({ item }) =>
+            renderTimeRangeButton(item.value, item.text)
+          }
+          keyExtractor={(item) => item.value}
+          horizontal
+          style={{ marginBottom: 10 }}
+        />
+      </View>
+      {/* Vertical Line */}
+      {/* {selectedMonth !== null && (
         <Svg
           width={Dimensions.get('window').width}
           height={200}
@@ -219,9 +309,14 @@ const CryptoLineGraph: React.FC = () => {
           />
         </Svg>
       )} */}
-      </View>
-    </PinchZoom>
+    </View>
   );
-};
+});
+const styles = StyleSheet.create({
+  header_text: {
+    ...{ color: COLORS.white, fontWeight: '700' },
+    ...FONTS.h1,
+  },
+});
 
 export default CryptoLineGraph;

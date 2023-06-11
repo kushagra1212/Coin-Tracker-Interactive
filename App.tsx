@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
+  View,
   useColorScheme,
 } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -23,6 +24,7 @@ import CoinScreen from './src/screens/CoinScreen';
 import SQLite from 'react-native-sqlite-storage';
 import { database } from './src/sqlite-storage/database';
 import { COINS } from './src/utils';
+import { DataItem } from './src/types';
 
 // SQLite.openDatabase({
 //   name: 'coins.db',
@@ -52,7 +54,7 @@ import { COINS } from './src/utils';
 export type RootStackParamList = {
   Home: undefined;
   Coin: {
-    coinSymbol: string;
+    coin: DataItem;
   };
 };
 
@@ -103,7 +105,17 @@ function App(): JSX.Element {
             component={HomeScreen}
           />
           <RootStack.Screen
-            options={{ headerShown: true }}
+            options={{
+              headerShown: true,
+              headerBackground: () => (
+                <View
+                  style={{
+                    backgroundColor: '#000',
+                    flex: 1,
+                  }}
+                />
+              ),
+            }}
             name="Coin"
             component={CoinScreen}
           />
