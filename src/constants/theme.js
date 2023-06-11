@@ -41,6 +41,7 @@ export const COLORS = {
   blackPrimary: '#656D78',
   blackSecondary: '#444955',
   black: '#0E0E0E',
+  blackPure: '#000000',
   white: '#FFFFFF',
 };
 

@@ -8,6 +8,7 @@ import {
   Animated,
   FlatList,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Svg, Circle, Line } from 'react-native-svg';
@@ -15,15 +16,27 @@ import PinchZoom from './PinchZoom';
 import { DataItem } from '../../types';
 import { COLORS, FONTS, SIZES } from '../../constants/theme';
 import Icon from 'react-native-vector-icons/AntDesign';
+import {
+  generateAllTimeLabels,
+  generateDailyLabels,
+  generateHourlyLabels,
+  generateLabelsForAMonthDayWise,
+  generateMonthlyLabels,
+  generateWeeklyLabels,
+  generateYearToDateLabels,
+  generateYearlyLabels,
+  getIntervalandLimit,
+  getLabels,
+} from '../../utils';
 type props = {
-  coin: DataItem;
+  coinSymbol: string;
 };
 
-interface ChartData {
+export interface ChartData {
   labels: string[];
   datasets: { data: number[] }[];
 }
-enum TimeRange {
+export enum TimeRange {
   TODAY = 'TODAY',
   WEEK = 'WEEK',
   ONE_MONTH = 'ONE_MONTH',
@@ -45,7 +58,7 @@ const TIME_RANGE_LIST = [
   { text: 'All Time', value: TimeRange.ALL_TIME },
 ];
 
-const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
+const CryptoLineGraph: React.FC<props> = React.memo(({ coinSymbol }) => {
   const [selectedMonth, setSelectedMonth] = useState<number>(3);
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
@@ -58,60 +71,14 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>(
     TimeRange.TODAY
   );
+  const [latestData, setLatestData] = useState<DataItem | null>(null);
   const [chartWidth, setChartWidth] = useState(Dimensions.get('window').width);
-
-  useEffect(() => {
-    fetchData(TimeRange.ONE_YEAR);
-  }, []);
 
   const fetchData = async (timeRange: TimeRange) => {
     try {
-      const coinSymbol = 'BTCUSDT'; // Update with your desired coin symbol
-      let interval = '1d'; // Default interval for most time ranges
-      let limit = 365; // Default limit for most time ranges
+      // Update with your desired coin symbol
 
-      switch (timeRange) {
-        case TimeRange.TODAY:
-          limit = 1440; // Fetch data for the last 24 hours (1 minute intervals)
-          interval = '1m';
-          break;
-        case TimeRange.WEEK:
-          limit = 7; // Fetch data for the last 7 days
-          interval = '1d';
-          break;
-        case TimeRange.ONE_MONTH:
-          limit = 30; // Fetch data for the last 30 days
-          interval = '1d';
-          break;
-        case TimeRange.SIX_MONTH:
-          limit = 180; // Fetch data for the last 6 months
-          interval = '1d';
-          break;
-        case TimeRange.YEAR_TO_DATE:
-          const currentDate = new Date();
-          const yearStart = new Date(currentDate.getFullYear(), 0, 1);
-          const daysPassed = Math.floor(
-            (currentDate.getTime() - yearStart.getTime()) /
-              (1000 * 60 * 60 * 24)
-          );
-          limit = daysPassed + 1; // Fetch data from the start of the year till today
-          interval = '1d';
-          break;
-        case TimeRange.ONE_YEAR:
-          limit = 365; // Fetch data for the last 1 year
-          interval = '1d';
-          break;
-        case TimeRange.FIVE_YEARS:
-          limit = 365 * 5; // Fetch data for the last 5 years
-          interval = '1w';
-          break;
-        case TimeRange.ALL_TIME:
-          limit = 0; // Fetch all available data
-          interval = '1w';
-          break;
-        default:
-          break;
-      }
+      const { limit, interval } = getIntervalandLimit(timeRange);
 
       const response = await fetch(
         `https://api.binance.com/api/v3/klines?symbol=${coinSymbol}&interval=${interval}&limit=${limit}`
@@ -122,11 +89,21 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
       }
 
       const data = await response.json();
-
-      // Process the API response data
-      const labels = data.map((item: any) =>
-        new Date(item[0]).toLocaleDateString()
-      );
+      setLatestData({
+        lastPrice: data[data.length - 1][4],
+        symbol: coinSymbol,
+        volume: data[data.length - 1][5],
+        prev: {
+          lastPrice: data[0][4],
+          symbol: coinSymbol,
+          volume: data[0][5],
+          prev: undefined,
+        },
+      });
+      const labels = getLabels(timeRange, data);
+      console.log(timeRange);
+      //console.log(labels);
+      setSelectedTimeRange(timeRange);
       const datasets = [{ data: data.map((item: any) => parseFloat(item[4])) }];
       setChartData({ labels, datasets });
     } catch (error) {
@@ -143,18 +120,49 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
       <TouchableOpacity
         onPress={() => handleTimeRangeClick(timeRange)}
         style={{
-          padding: 10,
+          paddingHorizontal: 15,
+          paddingVertical: 10,
+          marginRight: 10,
           backgroundColor:
-            selectedTimeRange === timeRange ? 'blue' : 'lightblue',
+            selectedTimeRange === timeRange ? COLORS.white : COLORS.blackPure,
+          borderRadius: 5,
+          borderWidth: 0.2,
+          borderColor: COLORS.lightGraySecondary,
+          elevation: 5,
         }}
       >
-        <Text>{label}</Text>
+        <Text
+          style={[
+            FONTS.body3,
+            {
+              color:
+                selectedTimeRange !== timeRange
+                  ? COLORS.GrayPrimary
+                  : COLORS.blackPure,
+              fontWeight: '700',
+            },
+          ]}
+        >
+          {label}
+        </Text>
       </TouchableOpacity>
     );
   };
+  useEffect(() => {
+    let unmounted = false;
+
+    if (!unmounted) fetchData(selectedTimeRange);
+
+    return () => {
+      unmounted = true;
+    };
+  }, []);
+  if (latestData === null) {
+    return <ActivityIndicator />;
+  }
   const distance = new Animated.Value(100);
   const CoinLineChartHeader = () => {
-    const formatedLastPrice = parseFloat(coin.lastPrice).toLocaleString(
+    const formatedLastPrice = parseFloat(latestData.lastPrice).toLocaleString(
       undefined,
       {
         minimumFractionDigits: 2,
@@ -162,17 +170,20 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
       }
     );
 
-    const currentPrice = parseFloat(coin.lastPrice);
-    const previousPrice = parseFloat(coin.prev?.lastPrice || '0');
+    const currentPrice = parseFloat(latestData.lastPrice);
+    const previousPrice = parseFloat(latestData.prev?.lastPrice || '0');
     const priceDiff = currentPrice - previousPrice;
     const sign = priceDiff < 0 ? '-' : '+';
     const priceDiffPercentage = (priceDiff / previousPrice) * 100;
     const showChange = previousPrice !== 0;
     const icon = priceDiff < 0 ? 'caretdown' : 'caretup';
-    const formattedVolume = parseFloat(coin.volume).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    const formattedVolume = parseFloat(latestData.volume).toLocaleString(
+      undefined,
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }
+    );
 
     const formattedPriceDiffPercentage = `${priceDiff
       .toFixed(2)
@@ -187,7 +198,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
           display: 'flex',
           flexDirection: 'row',
           height: 100,
-          backgroundColor: COLORS.black,
+          backgroundColor: COLORS.blackPure,
           padding: 5,
           paddingLeft: 15,
         }}
@@ -200,7 +211,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
           }}
         >
           <Text style={styles.header_text}>
-            {coin.symbol.replace('USDT', '')} 1 = $ {formatedLastPrice}
+            {latestData.symbol.replace('USDT', '')} 1 = $ {formatedLastPrice}
           </Text>
           {showChange ? (
             <Text
@@ -208,6 +219,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
                 {
                   color: COLORS.white,
                   fontWeight: '700',
+                  marginTop: 5,
                 },
                 FONTS.body3,
               ]}
@@ -226,14 +238,14 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
     );
   };
   return (
-    <View style={{ display: 'flex', backgroundColor: 'blue' }}>
+    <View style={{ display: 'flex', backgroundColor: COLORS.blackPure }}>
       <CoinLineChartHeader />
       {/* Line Chart */}
       {chartData.labels.length ? (
         <LineChart
           data={chartData}
           width={Dimensions.get('window').width}
-          height={400}
+          height={500}
           withVerticalLines={false}
           onDataPointClick={(data) => {
             console.log(data);
@@ -242,10 +254,10 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
           withDots={false}
           withHorizontalLines={false}
           chartConfig={{
-            backgroundGradientFrom: '#000000', // Black background
-            backgroundGradientTo: '#333333', // Dark gray background
+            backgroundGradientFrom: '#000111', // Black background
+            backgroundGradientTo: '#000000', // Dark gray background
             decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // Red line color
+            color: (opacity = 0) => `rgba(255, 20, 20, 0.5)`, // Red line color
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White label color
             width: Dimensions.get('window').width,
             propsForHorizontalLabels: {
@@ -255,8 +267,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
           bezier
           withOuterLines={false}
           style={{
-            marginLeft: -16, // Adjust chart positioning to align with the X-axis labels
-            backgroundColor: 'blue',
+            marginLeft: -16,
           }}
         />
       ) : null}
@@ -265,6 +276,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(({ coin }) => {
         style={{
           flexDirection: 'row',
           justifyContent: 'space-around',
+          margin: 10,
         }}
       >
         <FlatList

@@ -208,8 +208,8 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       // reconnectWebSocket();
     };
   };
-  const handleNavigationToCoinScreen = (item: DataItem) => {
-    setScrollSymbol(item.symbol);
+  const handleNavigationToCoinScreen = (coinSymbol: string) => {
+    setScrollSymbol(coinSymbol);
     if (websocket.current !== undefined && websocket.current) {
       console.log('closing websocket : Component CoinList');
       const removeWebSocketHandler = () => {
@@ -223,7 +223,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     }
 
     navigation.navigate('Coin', {
-      coin: item,
+      coinSymbol: coinSymbol,
     });
   };
   useEffect(() => {
@@ -264,7 +264,9 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     return (
       <RenderCoin
         item={item}
-        handleNavigationToCoinScreen={() => handleNavigationToCoinScreen(item)}
+        handleNavigationToCoinScreen={() =>
+          handleNavigationToCoinScreen(item.symbol)
+        }
       />
     );
   };
@@ -288,7 +290,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
             flex: 1 / 3,
           }}
           onPress={(e) => console.log('pressed')}
-          onPressIn={() => { }}
+          onPressIn={() => {}}
         >
           <Text>Symbol</Text>
         </TouchableOpacity>

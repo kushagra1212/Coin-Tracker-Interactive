@@ -54,7 +54,7 @@ import { DataItem } from './src/types';
 export type RootStackParamList = {
   Home: undefined;
   Coin: {
-    coin: DataItem;
+    coinSymbol: string;
   };
 };
 
