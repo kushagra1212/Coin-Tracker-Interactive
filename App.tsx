@@ -55,6 +55,7 @@ export type RootStackParamList = {
   Home: undefined;
   Coin: {
     coinSymbol: string;
+    initialVolume:string;
   };
 };
 

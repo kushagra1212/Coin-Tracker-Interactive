@@ -208,7 +208,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       // reconnectWebSocket();
     };
   };
-  const handleNavigationToCoinScreen = (coinSymbol: string) => {
+  const handleNavigationToCoinScreen = (coinSymbol: string,volume:string) => {
     setScrollSymbol(coinSymbol);
     if (websocket.current !== undefined && websocket.current) {
       console.log('closing websocket : Component CoinList');
@@ -224,6 +224,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
 
     navigation.navigate('Coin', {
       coinSymbol: coinSymbol,
+      initialVolume:volume
     });
   };
   useEffect(() => {
@@ -265,7 +266,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       <RenderCoin
         item={item}
         handleNavigationToCoinScreen={() =>
-          handleNavigationToCoinScreen(item.symbol)
+          handleNavigationToCoinScreen(item.symbol,item.volume)
         }
       />
     );

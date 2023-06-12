@@ -45,7 +45,7 @@ export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
   return nativeMarkPerformanceList;
 };
 
-export const throttle = (func, delay) => {
+export const throttle = (func: Function, delay) => {
   let throttling = false;
 
   return function (...args: any) {
@@ -65,7 +65,6 @@ export function generateHourlyLabels(data: any): string[] {
 
   const startDate = new Date(data[0][0]);
   let endDate = new Date(data[data.length - 1][0]);
-  console.log(data[data.length - 1]);
   const currentDate = new Date(startDate);
   while (startDate <= endDate) {
     labels.push(

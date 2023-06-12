@@ -8,7 +8,7 @@ import { COLORS } from '../constants/theme';
 type props = NativeStackScreenProps<RootStackParamList, 'Coin'>;
 
 const CoinScreen: React.FC<props> = ({ route, navigation }) => {
-  const { coinSymbol } = route.params;
+  const { coinSymbol,initialVolume } = route.params;
   useEffect(() => {
     navigation.setOptions({
       headerTitle: coinSymbol.replace('USDT', ''),
@@ -25,10 +25,7 @@ const CoinScreen: React.FC<props> = ({ route, navigation }) => {
     });
   }, []);
   return (
-    <View style={{ flex: 1 }}>
-      {/* <CoinChart coinSymbol={coinSymbol} interval="1d" limit={20} /> */}
-      <CryptoLineGraph coinSymbol={coinSymbol} />
-    </View>
+      <CryptoLineGraph coinSymbol={coinSymbol} initialVolume={initialVolume} />
   );
 };
 
