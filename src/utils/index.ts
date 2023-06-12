@@ -1,7 +1,7 @@
 import { PerformanceEntry } from 'react-native-performance';
 
 import { InteractionManager } from 'react-native';
-import { TimeRange } from '../components/chart/CryptoLineGraph';
+import { TimeRange } from '../types';
 export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
   if (!list) {
     return [];
@@ -235,7 +235,7 @@ export function getIntervalandLimit(timeRange: TimeRange) {
   return { interval, limit };
 }
 
-export function getLabels(timeRange: TimeRange, data) {
+export function getLabels(timeRange: TimeRange, data: any) {
   let labels: any = [];
 
   switch (timeRange) {
@@ -268,3 +268,13 @@ export function getLabels(timeRange: TimeRange, data) {
   }
   return labels;
 }
+export const TIME_RANGE_LIST = [
+  { text: 'Today', value: TimeRange.TODAY },
+  { text: 'Week', value: TimeRange.WEEK },
+  { text: '1 Month', value: TimeRange.ONE_MONTH },
+  { text: '6 Months', value: TimeRange.SIX_MONTH },
+  { text: 'YTD', value: TimeRange.YEAR_TO_DATE },
+  { text: '1 Year', value: TimeRange.ONE_YEAR },
+  { text: '5 Years', value: TimeRange.FIVE_YEARS },
+  { text: 'All Time', value: TimeRange.ALL_TIME },
+];

@@ -14,10 +14,11 @@ import {
 import { LineChart } from 'react-native-chart-kit';
 import { Svg, Circle, Line } from 'react-native-svg';
 import PinchZoom from './PinchZoom';
-import { DataItem } from '../../types';
+import { ChartData, DataItem, IDataItem, TimeRange } from '../../types';
 import { COLORS, FONTS, SIZES } from '../../constants/theme';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {
+  TIME_RANGE_LIST,
   generateAllTimeLabels,
   generateDailyLabels,
   generateHourlyLabels,
@@ -28,48 +29,15 @@ import {
   getIntervalandLimit,
   getLabels,
 } from '../../utils';
+import SkeletonLoader from '../SkeletonLoader';
+import LineGraphSkeleton from '../LineGraphSekeleton';
+import CryptoLineGraphSekeleton from '../CryptoLineGraphSekeleton';
+import LineGraphWithZoom from './LineGraphWithZoom ';
 type props = {
   coinSymbol: string;
   initialVolume: string;
 };
 
-export interface ChartData {
-  labels: string[];
-  datasets: { data: number[] }[];
-}
-export enum TimeRange {
-  TODAY = 'TODAY',
-  WEEK = 'WEEK',
-  ONE_MONTH = 'ONE_MONTH',
-  SIX_MONTH = 'SIX_MONTH',
-  YEAR_TO_DATE = 'YEAR_TO_DATE',
-  ONE_YEAR = 'ONE_YEAR',
-  FIVE_YEARS = 'FIVE_YEARS',
-  ALL_TIME = 'ALL_TIME',
-}
-
-const TIME_RANGE_LIST = [
-  { text: 'Today', value: TimeRange.TODAY },
-  { text: 'Week', value: TimeRange.WEEK },
-  { text: '1 Month', value: TimeRange.ONE_MONTH },
-  { text: '6 Months', value: TimeRange.SIX_MONTH },
-  { text: 'YTD', value: TimeRange.YEAR_TO_DATE },
-  { text: '1 Year', value: TimeRange.ONE_YEAR },
-  { text: '5 Years', value: TimeRange.FIVE_YEARS },
-  { text: 'All Time', value: TimeRange.ALL_TIME },
-];
-interface IDataItem {
-  lastPrice: string;
-  symbol: string;
-  volume: string;
-  closeTime?: string;
-  prev: {
-    lastPrice: string;
-    symbol: string;
-    volume: string;
-    prev: undefined;
-  };
-}
 const CryptoLineGraph: React.FC<props> = React.memo(
   ({ coinSymbol, initialVolume }) => {
     const [selectedMonth, setSelectedMonth] = useState<number>(3);
@@ -88,6 +56,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
     const [chartWidth, setChartWidth] = useState(
       Dimensions.get('window').width
     );
+    const [loading, setLoading] = useState<boolean>(false);
     const COIN_SYMBOL = useMemo(
       () => coinSymbol.replace('USDT', '').toLowerCase(),
       [coinSymbol]
@@ -96,7 +65,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
     const fetchData = async (timeRange: TimeRange) => {
       try {
         // Update with your desired coin symbol
-
+        setLoading(true);
         const { limit, interval } = getIntervalandLimit(timeRange);
 
         const response = await fetch(
@@ -122,17 +91,19 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         });
         const labels = getLabels(timeRange, data);
         //console.log(labels);
-        setSelectedTimeRange(timeRange);
         const datasets = [
           { data: data.map((item: any) => parseFloat(item[4])) },
         ];
         setChartData({ labels, datasets });
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     const handleTimeRangeClick = (timeRange: TimeRange) => {
+      setSelectedTimeRange(timeRange);
+
       fetchData(timeRange);
     };
 
@@ -179,7 +150,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       };
     }, []);
     if (latestData === null) {
-      return <ActivityIndicator />;
+      return <CryptoLineGraphSekeleton />;
     }
     const CoinLineChartHeader = React.memo(() => {
       const formatedLastPrice = parseFloat(latestData.lastPrice).toLocaleString(
@@ -324,35 +295,16 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       <View style={{ flex: 1, backgroundColor: COLORS.blackPure }}>
         <CoinLineChartHeader />
         {/* Line Chart */}
-        {chartData.labels.length ? (
-          <LineChart
-            data={chartData}
+        {!loading ? (
+          <LineGraphWithZoom chartData={chartData} />
+        ) : (
+          <LineGraphSkeleton
             width={Dimensions.get('window').width}
             height={500}
-            withVerticalLines={false}
-            onDataPointClick={(data) => {
-              setSelectedMonth(data.index);
-            }}
-            withDots={false}
-            withHorizontalLines={false}
-            chartConfig={{
-              backgroundGradientFrom: '#000111', // Black background
-              backgroundGradientTo: '#000000', // Dark gray background
-              decimalPlaces: 0,
-              color: (opacity = 0) => `rgba(255, 20, 20, 0.5)`, // Red line color
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White label color
-              width: Dimensions.get('window').width,
-              propsForHorizontalLabels: {
-                opacity: 0, // Hide the Y-axis line
-              },
-            }}
-            bezier
-            withOuterLines={false}
-            style={{
-              marginLeft: -16,
-            }}
+            duration={500}
+            lineColor={`rgba(255, 40, 40, 0.3)`}
           />
-        ) : null}
+        )}
         {/* Time Range Buttons */}
         <View
           style={{
@@ -365,7 +317,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
             renderItem={({ item }) =>
               renderTimeRangeButton(item.value, item.text)
             }
-            keyExtractor={(item) => item.value}
+            keyExtractor={(item) => item.value.toString()}
             horizontal
             style={{ marginBottom: 10 }}
           />
