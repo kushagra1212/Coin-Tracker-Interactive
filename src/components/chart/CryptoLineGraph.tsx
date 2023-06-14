@@ -61,7 +61,6 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       () => coinSymbol.replace('USDT', '').toLowerCase(),
       [coinSymbol]
     );
-    console.log(COIN_SYMBOL);
     const fetchData = async (timeRange: TimeRange) => {
       try {
         // Update with your desired coin symbol
@@ -250,7 +249,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       const showChange = previousPrice !== 0;
       const icon = priceDiff < 0 ? 'caretdown' : 'caretup';
       const formattedVolume = parseFloat(latestData.volume).toLocaleString();
-      console.log(latestData.volume);
+
       const formattedPriceDiffPercentage = `${priceDiff
         .toFixed(2)
         .replace('-', '')} (${priceDiffPercentage
