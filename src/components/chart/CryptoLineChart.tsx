@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Svg, Circle, Line } from 'react-native-svg';
-import PinchZoom from './PinchZoom';
 import { ChartData, DataItem, IDataItem, TimeRange } from '../../types';
 import { COLORS, FONTS, SIZES } from '../../constants/theme';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -30,9 +29,9 @@ import {
   getLabels,
 } from '../../utils';
 import SkeletonLoader from '../SkeletonLoader';
-import LineGraphSkeleton from '../LineGraphSekeleton';
-import CryptoLineGraphSekeleton from '../CryptoLineGraphSekeleton';
-import LineGraphWithZoom from './LineGraphWithZoom ';
+import LineGraphSkeleton from '../LineChartSekeleton';
+import CryptoLineGraphSekeleton from '../CryptoLineChartSekeleton';
+import LineGraphWithZoom from './LineChartWithZoom ';
 type props = {
   coinSymbol: string;
   initialVolume: string;
@@ -178,9 +177,9 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       const formattedPriceDiffPercentage = `${priceDiff
         .toFixed(2)
         .replace('-', '')} (${priceDiffPercentage
-        .toFixed(2)
-        .toString()
-        .replace('-', '')} %)`;
+          .toFixed(2)
+          .toString()
+          .replace('-', '')} %)`;
 
       return (
         <View
@@ -253,9 +252,9 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       const formattedPriceDiffPercentage = `${priceDiff
         .toFixed(2)
         .replace('-', '')} (${priceDiffPercentage
-        .toFixed(2)
-        .toString()
-        .replace('-', '')} %)`;
+          .toFixed(2)
+          .toString()
+          .replace('-', '')} %)`;
       return (
         <View
           style={{

@@ -1,7 +1,7 @@
 import { View, Dimensions } from 'react-native';
 import SkeletonLoader from './SkeletonLoader';
 import { FlatList } from 'react-native';
-import LineGraphSkeleton from './LineGraphSekeleton';
+import LineGraphSkeleton from './LineChartSekeleton';
 import { COLORS } from '../constants/theme';
 import { TIME_RANGE_LIST } from '../utils';
 
