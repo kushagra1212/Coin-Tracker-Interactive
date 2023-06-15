@@ -21,10 +21,9 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from './src/screens/HomeScreen';
 import CoinScreen from './src/screens/CoinScreen';
-import SQLite from 'react-native-sqlite-storage';
-import { database } from './src/sqlite-storage/database';
 import { COINS } from './src/utils';
 import { DataItem } from './src/types';
+import { database } from './src/sqlite-storage/database';
 
 // SQLite.openDatabase({
 //   name: 'coins.db',
@@ -55,7 +54,7 @@ export type RootStackParamList = {
   Home: undefined;
   Coin: {
     coinSymbol: string;
-    initialVolume:string;
+    initialVolume: string;
   };
 };
 
@@ -70,7 +69,6 @@ function App(): JSX.Element {
   const init = async () => {
     try {
       await database.initialize();
-      // await database.dropAllTables();
     } catch (err) {
       console.log('SQLite ERROR : err');
     } finally {

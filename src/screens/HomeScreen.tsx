@@ -35,14 +35,6 @@ const traceRender: ProfilerOnRenderCallback = (
   });
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  let websocketRef = useRef<WebSocket>();
-
-  const [coinData, setCoinData] = useState<Array<ICoin>>([]);
-  const appState = useRef(AppState);
-  const [loading, setLoading] = useState(false);
-
-  const [cpuUsage, setCpuUsage] = useState(0);
-
   // React.useEffect(() => {
   //   // new PerformanceObserver(() => {
   //   //   console.log(
@@ -77,29 +69,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   //   }).observe({ type: 'react-native-mark', buffered: true });
   // }, [loading]);
 
-  React.useEffect(() => {
-    // @ts-ignore
-
-    fetch('https://xkcd.com/info.0.json', { cache: 'no-cache' });
-  }, []);
-
-  const handleSort = (column: string) => {
-    // Implement sorting logic based on the selected column
-    // Update the coinData state with the sorted data
-  };
-
-  const renderItem = ({ item }: { item: ICoin }) => {
-    const { s: symbol, c: price, v: volume } = item;
-
-    return (
-      <View>
-        <Text>{symbol}</Text>
-        <Text>{Number(parseFloat(price).toFixed(2))}</Text>
-        <Text>{Number(parseFloat(volume).toFixed(2))}</Text>
-      </View>
-    );
-  };
-
   return (
     <Profiler id="App.render()" onRender={traceRender}>
       <SafeAreaView>
@@ -114,19 +83,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
         </TouchableOpacity> */}
         <CoinList navigation={navigation} />
-
-        <TouchableOpacity onPress={() => handleSort('price')}>
-          <Text>Sort by Price</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => handleSort('volume')}>
-          <Text>Sort by Volume</Text>
-        </TouchableOpacity>
-        {
-          loading && (
-            <ActivityIndicator />
-          ) /* Render a loading indicator while new data is being fetched */
-        }
       </SafeAreaView>
     </Profiler>
   );

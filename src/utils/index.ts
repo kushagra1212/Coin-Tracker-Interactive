@@ -2,6 +2,58 @@ import { PerformanceEntry } from 'react-native-performance';
 
 import { InteractionManager } from 'react-native';
 import { TimeRange } from '../types';
+
+export const getValueAndColor = (
+  nextValue: string,
+  prevValue: string | undefined
+) => {
+  if (prevValue === undefined) {
+    return {
+      commanPrefix: parseFloat(nextValue).toFixed(2),
+      nextValueSuffix: '',
+      prevValueSuffix: '',
+      color: 'black',
+    };
+  }
+  let commanPrefix = '',
+    nextValueSuffix = '',
+    prevValueSuffix = '',
+    len = nextValue.length;
+  nextValue = parseFloat(nextValue).toFixed(2);
+  prevValue = parseFloat(prevValue).toFixed(2);
+  len = nextValue.length;
+  for (let i = 0; i < len; i++) {
+    if (nextValue[i] === prevValue[i]) {
+      commanPrefix += nextValue[i];
+    } else {
+      nextValueSuffix = nextValue.substring(i);
+      prevValueSuffix = prevValue.substring(i);
+      break;
+    }
+  }
+  let isChanged = true;
+  if (parseFloat(nextValueSuffix) - parseFloat(prevValueSuffix) == 0)
+    isChanged = false;
+  const color =
+    parseFloat(nextValueSuffix) > parseFloat(prevValueSuffix) ? 'green' : 'red';
+  return {
+    commanPrefix,
+    nextValueSuffix,
+    prevValueSuffix,
+    color,
+    isChanged,
+  };
+};
+export const getVariables = (initial: string, old: string | undefined) => {
+  const current = parseFloat(initial);
+  const previous = old ? parseFloat(old) : parseFloat(initial);
+  const diff = current - previous;
+  const sign = diff < 0 ? '-' : '+';
+  const percent = (diff / previous) * 100;
+  const showChange = previous !== 0;
+  const icon = diff < 0 ? 'caretdown' : 'caretup';
+  return { sign, percent, showChange, icon };
+};
 export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
   if (!list) {
     return [];

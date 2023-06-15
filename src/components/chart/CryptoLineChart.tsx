@@ -32,6 +32,7 @@ import SkeletonLoader from '../SkeletonLoader';
 import LineGraphSkeleton from '../LineChartSekeleton';
 import CryptoLineGraphSekeleton from '../CryptoLineChartSekeleton';
 import LineGraphWithZoom from './LineChartWithZoom ';
+import PriceChangeComponent from './PriceChangeComponent';
 type props = {
   coinSymbol: string;
   initialVolume: string;
@@ -150,6 +151,23 @@ const CryptoLineGraph: React.FC<props> = React.memo(
     if (latestData === null) {
       return <CryptoLineGraphSekeleton />;
     }
+    const getPriceVariables = () => {
+      const currentPrice = parseFloat(latestData.lastPrice);
+      const previousPrice = parseFloat(latestData.prev?.lastPrice || '0');
+      const priceDiff = currentPrice - previousPrice;
+      const sign = priceDiff < 0 ? '-' : '+';
+      const priceDiffPercentage = (priceDiff / previousPrice) * 100;
+      const showChange = previousPrice !== 0;
+      const icon = priceDiff < 0 ? 'caretdown' : 'caretup';
+
+      return {
+        priceDiff,
+        priceDiffPercentage,
+        showChange,
+        icon,
+        sign,
+      }
+    }
     const CoinLineChartHeader = React.memo(() => {
       const formatedLastPrice = parseFloat(latestData.lastPrice).toLocaleString(
         undefined,
@@ -159,13 +177,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         }
       );
 
-      const currentPrice = parseFloat(latestData.lastPrice);
-      const previousPrice = parseFloat(latestData.prev?.lastPrice || '0');
-      const priceDiff = currentPrice - previousPrice;
-      const sign = priceDiff < 0 ? '-' : '+';
-      const priceDiffPercentage = (priceDiff / previousPrice) * 100;
-      const showChange = previousPrice !== 0;
-      const icon = priceDiff < 0 ? 'caretdown' : 'caretup';
+      const { priceDiff, priceDiffPercentage, showChange, icon, sign } = getPriceVariables();
       const formattedVolume = parseFloat(latestData.volume).toLocaleString(
         undefined,
         {
@@ -213,40 +225,9 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         </View>
       );
     });
-    const PriceChangeComponent = React.memo(
-      ({ formattedPriceDiffPercentage, icon, sign }: any) => {
-        return (
-          <View style={{ display: 'flex', marginTop: 5, flexDirection: 'row' }}>
-            <Icon
-              name={icon}
-              size={20}
-              color={sign === '-' ? COLORS.redPrimary : COLORS.greenPrimary}
-              style={sign !== '-' ? { marginTop: 3 } : {}}
-            />
-            <Text
-              style={[
-                {
-                  color: COLORS.white,
-                  fontWeight: '700',
-                },
-                FONTS.body3,
-              ]}
-            >
-              {' ' + sign}
-              {formattedPriceDiffPercentage}
-            </Text>
-          </View>
-        );
-      }
-    );
+
     const FooterComponent = () => {
-      const currentPrice = parseFloat(latestData.lastPrice);
-      const previousPrice = parseFloat(latestData.prev?.lastPrice || '0');
-      const priceDiff = currentPrice - previousPrice;
-      const sign = priceDiff < 0 ? '-' : '+';
-      const priceDiffPercentage = (priceDiff / previousPrice) * 100;
-      const showChange = previousPrice !== 0;
-      const icon = priceDiff < 0 ? 'caretdown' : 'caretup';
+      const { priceDiff, priceDiffPercentage, showChange, icon, sign } = getPriceVariables();
       const formattedVolume = parseFloat(latestData.volume).toLocaleString();
 
       const formattedPriceDiffPercentage = `${priceDiff

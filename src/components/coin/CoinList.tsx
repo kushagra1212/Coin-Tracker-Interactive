@@ -16,15 +16,14 @@ import {
 import { ViewToken } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DataItem, SortBy } from '../../types';
-import { database } from '../../sqlite-storage/database';
+
 import { throttle } from '../../utils';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParamListBase, useFocusEffect } from '@react-navigation/native';
 import RenderCoin from './RenderCoin';
 import LoadingComponent from './Loading';
 import RenderFooter from './RenderFooter';
-import { LinearGradient } from 'react-native-svg';
-
+import { database } from '../../sqlite-storage/database';
 type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
 };
@@ -45,7 +44,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   const [initialFetchLoad, setInitialFetchLoad] = useState<boolean>(true);
   const [loadOtherScreen, setLoadOtherScreen] = useState<boolean>(false);
   const [scrollSymbol, setScrollSymbol] = useState<string>('');
-  const windowSize = 40;
+  const windowSize = 10;
   const webSocketHandler = (
     event: WebSocketMessageEvent,
     viewableItems: ViewToken[]
@@ -127,17 +126,21 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       let contentSize = windowSize;
       let startIndex = (current_window - 1) * contentSize;
       console.log(startIndex, 'startindex');
-
+      const initalTime = Date.now();
       const res = await database.getData(
         sort_by.type,
         sort_by.order,
         startIndex,
         contentSize
       );
+
       if (res && res.length > 0) {
         if (start) setCoins(res);
         else {
-          setCoins((prev) => [...prev, ...res]);
+          setCoins((prev) => {
+            prev.push(...res);
+            return prev;
+          });
         }
       } else {
         setReachedEnd(true);
@@ -145,9 +148,10 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       if (start) {
         setInitialFetchLoad(false);
       }
-      console.log('Got the Response ');
-      setCurrentWindow(current_window);
       setLoading(false);
+
+      setCurrentWindow(current_window);
+
       setSortBy(sort_by);
     } catch (err) {
       setLoading(false);
@@ -208,7 +212,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       // reconnectWebSocket();
     };
   };
-  const handleNavigationToCoinScreen = (coinSymbol: string,volume:string) => {
+  const handleNavigationToCoinScreen = (coinSymbol: string, volume: string) => {
     setScrollSymbol(coinSymbol);
     if (websocket.current !== undefined && websocket.current) {
       console.log('closing websocket : Component CoinList');
@@ -224,7 +228,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
 
     navigation.navigate('Coin', {
       coinSymbol: coinSymbol,
-      initialVolume:volume
+      initialVolume: volume,
     });
   };
   useEffect(() => {
@@ -266,7 +270,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       <RenderCoin
         item={item}
         handleNavigationToCoinScreen={() =>
-          handleNavigationToCoinScreen(item.symbol,item.volume)
+          handleNavigationToCoinScreen(item.symbol, item.volume)
         }
       />
     );
@@ -276,7 +280,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     <SafeAreaView
       style={{ display: 'flex', backgroundColor: 'red', margin: 5 }}
     >
-      <View
+      {/* <View
         style={{
           display: 'flex',
           flexDirection: 'row',
@@ -307,7 +311,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
         >
           <Text>Volume</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
       <FlatList
         ref={flatListRef}
         data={coins}
@@ -318,13 +322,12 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
         }}
         viewabilityConfig={{
           minimumViewTime: 0,
-          itemVisiblePercentThreshold: 60,
+          itemVisiblePercentThreshold: 0,
         }}
         initialNumToRender={windowSize}
         onEndReached={fetchNextWindow}
         onViewableItemsChanged={onViewableItemsChanged}
         onEndReachedThreshold={0.8}
-        windowSize={41}
         renderItem={renderItemComponent}
         ListFooterComponent={renderFooter}
         keyExtractor={(item, index) => item.symbol}
