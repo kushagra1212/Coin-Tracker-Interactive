@@ -85,6 +85,22 @@ export class Database {
         });
     });
   }
+  public storeDataInMappingTable = (dataArray: any[]) => {
+    this.db.then((tx) => {
+      dataArray.forEach((item) => {
+        tx.executeSql(
+          'INSERT INTO crypto_mapping (symbol, name) VALUES (?, ?);',
+          [item.symbol, item.name],
+          () => {
+            console.log(`Data stored for ${item.symbol}`);
+          },
+          (error) => {
+            console.error(`Failed to store data for ${item.symbol}:`, error);
+          }
+        );
+      });
+    });
+  };
 
   private insertData(dataArray: DataItem[]): Promise<void> {
     console.log('Inserting data...');
@@ -121,6 +137,57 @@ export class Database {
         });
     });
   }
+
+  public truncateTable = (tableName: string): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+      this.db
+        .then((tx) => {
+          tx.executeSql(
+            `DELETE FROM ${tableName};`,
+            [],
+            () => {
+              console.log(`Table ${tableName} truncated successfully.`);
+              resolve(true);
+            },
+            (error) => {
+              console.error(`Failed to truncate table ${tableName}:`, error);
+              reject(false);
+            }
+          );
+        })
+        .catch((err) => {
+          console.log('Error truncating table:', err);
+          reject(false);
+        });
+    });
+  };
+  public getCryptoName = (symbol: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      this.db
+        .then((tx) => {
+          tx.executeSql(
+            `SELECT name FROM crypto_mapping WHERE symbol = '${symbol}'`
+          )
+            .then((results: any) => {
+              if (results[0].rows.length > 0) {
+                const name = results[0].rows.item(0).name;
+                resolve(name);
+              } else {
+                console.log('No name found');
+                resolve('');
+              }
+            })
+            .catch((err) => {
+              console.log('Error getting name:', err);
+              reject('');
+            });
+        })
+        .catch((err) => {
+          console.log('Error getting name:', err);
+          reject('');
+        });
+    });
+  };
   private updateDateTable(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.db
@@ -131,8 +198,8 @@ export class Database {
                 const storedTime = results[0].rows.item(0).storeTime;
                 const currentTime = Date.now();
                 const timeDifference = currentTime - storedTime;
-                if (timeDifference >= 86400000) {
-                  // 24 hours in milliseconds
+                if (timeDifference >= 1000000) {
+                  // 24 hours  in milliseconds 86400000
                   console.log('timeDifference', timeDifference);
                   tx.executeSql(
                     'UPDATE time_table SET storeTime = ? WHERE id = ?',
@@ -175,7 +242,8 @@ export class Database {
         console.log('initializing database...');
         const requireUpdate = await this.updateDateTable();
         if (requireUpdate) {
-          return this.fetchDataAndStore()
+          return this.truncateTable(TABLE_NAME)
+            .then(() => this.fetchDataAndStore())
             .then(() => this.createIndexes())
             .then(resolve)
             .catch(reject);

@@ -2,6 +2,7 @@ import { PerformanceEntry } from 'react-native-performance';
 
 import { InteractionManager } from 'react-native';
 import { TimeRange } from '../types';
+import { COLORS } from '../constants/theme';
 
 export const getValueAndColor = (
   nextValue: string,
@@ -15,6 +16,12 @@ export const getValueAndColor = (
       color: 'black',
     };
   }
+  let isChanged = true;
+  if (
+    Math.abs(parseFloat(prevValue) - parseFloat(nextValue)).toFixed(2) ===
+    '0.00'
+  )
+    isChanged = false;
   let commanPrefix = '',
     nextValueSuffix = '',
     prevValueSuffix = '',
@@ -31,11 +38,11 @@ export const getValueAndColor = (
       break;
     }
   }
-  let isChanged = true;
-  if (parseFloat(nextValueSuffix) - parseFloat(prevValueSuffix) == 0)
-    isChanged = false;
+
   const color =
-    parseFloat(nextValueSuffix) > parseFloat(prevValueSuffix) ? 'green' : 'red';
+    parseFloat(nextValueSuffix) > parseFloat(prevValueSuffix)
+      ? COLORS.greenPrimary
+      : COLORS.redPrimary;
   return {
     commanPrefix,
     nextValueSuffix,

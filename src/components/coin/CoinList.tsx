@@ -24,12 +24,20 @@ import RenderCoin from './RenderCoin';
 import LoadingComponent from './Loading';
 import RenderFooter from './RenderFooter';
 import { database } from '../../sqlite-storage/database';
+import { COLORS } from '../../constants/theme';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {
+  connectWebSocket,
+  disconnectWebSocket,
+  getWebSocket,
+} from '../../web-socket/web-socket';
+import CoinListSekeleton from '../CoinListSekeleton';
+import CoinListHeader from './CoinListHeader';
 type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
 };
 
 const CoinList: React.FC<props> = React.memo(({ navigation }) => {
-  let websocket = useRef<WebSocket>();
   let reconnectAttemptsRef = useRef<number>(0).current;
   const flatListRef = useRef<FlatList<DataItem> | null>(null);
 
@@ -88,9 +96,9 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
 
   const throttledOnMessage = useCallback(throttle(webSocketHandler, 2000), []);
   const handleOnViewableItemsChanged = (viewableItems: ViewToken[]) => {
-    if (websocket.current) {
-      let timeNow = Date.now();
-      websocket.current.onmessage = (event) => {
+    const websocket = getWebSocket();
+    if (websocket) {
+      websocket.onmessage = (event) => {
         throttledOnMessage(event, viewableItems);
       };
     }
@@ -121,6 +129,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   ) => {
     if (loading || reachedEnd) return;
     try {
+      setSortBy(sort_by);
       setLoading(true);
       if (start === true) setInitialFetchLoad(true);
       let contentSize = windowSize;
@@ -151,34 +160,21 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       setLoading(false);
 
       setCurrentWindow(current_window);
-
-      setSortBy(sort_by);
     } catch (err) {
       setLoading(false);
       console.log(err);
     }
   };
 
-  const handleSort = async (column: SortBy['type']) => {
-    if (sortBy.type === column) {
-      fetchData(
-        {
-          ...sortBy,
-          order: sortBy.order === 'asc' ? 'desc' : 'asc',
-        },
-        1,
-        true
-      );
-    } else {
-      fetchData(
-        {
-          ...sortBy,
-          type: column,
-        },
-        1,
-        true
-      );
-    }
+  const handleSort = async ({ type, order }: SortBy) => {
+    fetchData(
+      {
+        type,
+        order,
+      },
+      1,
+      true
+    );
   };
   const fetchNextWindow = () => {
     fetchData(sortBy, currentWindow + 1, false);
@@ -190,78 +186,29 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
       const reconnectDelay = Math.pow(Number(4), reconnectAttemptsRef) * 1000;
 
       setTimeout(() => {
-        createWebSocketConnection();
+        connectWebSocket();
         reconnectAttemptsRef++;
       }, reconnectDelay);
     } else {
-      createWebSocketConnection();
+      connectWebSocket();
       reconnectAttemptsRef++;
     }
   };
-  const createWebSocketConnection = () => {
-    websocket.current = new WebSocket(
-      'wss://stream.binance.com:9443/ws/!ticker@arr'
-    );
 
-    websocket.current.onopen = () => {
-      console.log('WebSocket connection opened');
-    };
-
-    websocket.current.onclose = (event) => {
-      console.log('WebSocket connection closed:');
-      // reconnectWebSocket();
-    };
-  };
   const handleNavigationToCoinScreen = (coinSymbol: string, volume: string) => {
     setScrollSymbol(coinSymbol);
-    if (websocket.current !== undefined && websocket.current) {
-      console.log('closing websocket : Component CoinList');
-      const removeWebSocketHandler = () => {
-        const ws = websocket.current;
-        return () => {
-          console.log('Disconnecting websocket');
-          if (ws) ws.close();
-        };
+    const removeWebSocketHandler = () => {
+      return () => {
+        disconnectWebSocket();
       };
-      setTimeout(removeWebSocketHandler(), 0);
-    }
+    };
+    setTimeout(removeWebSocketHandler(), 0);
 
     navigation.navigate('Coin', {
       coinSymbol: coinSymbol,
       initialVolume: volume,
     });
   };
-  useEffect(() => {
-    let unMounted = false;
-    if (unMounted) return;
-    console.log('Component: CoinList mounted');
-    createWebSocketConnection();
-    if (!loading) {
-      fetchData(sortBy, 1, true);
-    }
-
-    return () => {
-      unMounted = true;
-      console.log('Component: CoinList Unmounted');
-      if (websocket.current !== undefined && websocket.current) {
-        console.log('closing websocket Component unmounted');
-        websocket.current.close();
-      }
-    };
-  }, []);
-  useFocusEffect(() => {
-    if (
-      websocket.current !== undefined &&
-      websocket.current.readyState === WebSocket.CLOSED
-    ) {
-      reconnectWebSocket();
-      scrollOneItemBelow();
-    }
-  });
-
-  if (initialFetchLoad) {
-    return <LoadingComponent />;
-  }
   const renderFooter = () => {
     return <RenderFooter loading={loading} reachedEnd={reachedEnd} />;
   };
@@ -276,62 +223,57 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     );
   };
 
+  useEffect(() => {
+    const websocket = getWebSocket();
+    let unMounted = false;
+    if (unMounted) return;
+    console.log('Component: CoinList mounted');
+
+    if (!loading) {
+      fetchData(sortBy, 1, true);
+    }
+
+    return () => {
+      unMounted = true;
+      console.log('Component: CoinList Unmounted');
+      if (websocket !== null && websocket) {
+        console.log('closing websocket Component unmounted');
+        websocket.close();
+      }
+    };
+  }, []);
+  useFocusEffect(() => {
+    const websocket = getWebSocket();
+    if (websocket === null) {
+      reconnectWebSocket();
+      scrollOneItemBelow();
+    }
+  });
+
   return (
     <SafeAreaView
-      style={{ display: 'flex', backgroundColor: 'red', margin: 5 }}
+      style={{ display: 'flex', backgroundColor: COLORS.black, margin: 0 }}
     >
-      {/* <View
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          height: 50,
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            backgroundColor: 'blue',
-            alignSelf: 'stretch',
-            flex: 1 / 3,
-          }}
-          onPress={(e) => console.log('pressed')}
-          onPressIn={() => {}}
-        >
-          <Text>Symbol</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ backgroundColor: 'black', flex: 1 / 3 }}
-          onPressIn={() => handleSort('lastPrice')}
-        >
-          <Text>Price</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ flex: 1 / 3 }}
-          onPressIn={() => handleSort('volume')}
-        >
-          <Text>Volume</Text>
-        </TouchableOpacity>
-      </View> */}
-      <FlatList
-        ref={flatListRef}
-        data={coins}
-        contentContainerStyle={{
-          backgroundColor: 'green',
-          padding: 5,
-          paddingBottom: 150,
-        }}
-        viewabilityConfig={{
-          minimumViewTime: 0,
-          itemVisiblePercentThreshold: 0,
-        }}
-        initialNumToRender={windowSize}
-        onEndReached={fetchNextWindow}
-        onViewableItemsChanged={onViewableItemsChanged}
-        onEndReachedThreshold={0.8}
-        renderItem={renderItemComponent}
-        ListFooterComponent={renderFooter}
-        keyExtractor={(item, index) => item.symbol}
-      />
+      <CoinListHeader handleSortBy={handleSort} {...sortBy} />
+      {initialFetchLoad ? (
+        <CoinListSekeleton amount={10} />
+      ) : (
+        <FlatList
+          ref={flatListRef}
+          data={coins}
+          // viewabilityConfig={{
+          //   minimumViewTime: 0,
+          //   itemVisiblePercentThreshold: 0,
+          // }}
+          initialNumToRender={windowSize}
+          onEndReached={fetchNextWindow}
+          onViewableItemsChanged={onViewableItemsChanged}
+          onEndReachedThreshold={0.5}
+          renderItem={renderItemComponent}
+          ListFooterComponent={renderFooter}
+          keyExtractor={(item, index) => item.symbol}
+        />
+      )}
     </SafeAreaView>
   );
 });

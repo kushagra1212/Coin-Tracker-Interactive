@@ -24,6 +24,7 @@ import CoinScreen from './src/screens/CoinScreen';
 import { COINS } from './src/utils';
 import { DataItem } from './src/types';
 import { database } from './src/sqlite-storage/database';
+import { connectWebSocket } from './src/web-socket/web-socket';
 
 // SQLite.openDatabase({
 //   name: 'coins.db',
@@ -99,7 +100,7 @@ function App(): JSX.Element {
       <NavigationContainer>
         <RootStack.Navigator initialRouteName={'Home'}>
           <RootStack.Screen
-            options={{ headerShown: true }}
+            options={{ headerShown: false }}
             name="Home"
             component={HomeScreen}
           />

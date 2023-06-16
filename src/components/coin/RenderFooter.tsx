@@ -1,6 +1,8 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import LoadingComponent from './Loading';
+import CoinListSekeleton, { CoinCardSekeleton } from '../CoinListSekeleton';
+import { COLORS } from '../../constants/theme';
 
 type props = {
   loading: boolean;
@@ -13,22 +15,32 @@ const RenderFooter: React.FC<props> = React.memo(({ loading, reachedEnd }) => {
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 20,
+        marginTop: -20,
       }}
     >
       {loading ? (
-        <LoadingComponent />
+        <CoinListSekeleton amount={5} />
       ) : reachedEnd ? (
         <View
           style={{
             display: 'flex',
-            height: 100,
+            height: 30,
             position: 'absolute',
-            backgroundColor: 'red',
-            bottom: 0,
+            backgroundColor: COLORS.black,
             width: '100%',
+            elevation: 30,
           }}
         >
-          <Text style={{ color: 'black' }}>End of the List</Text>
+          <Text
+            style={{
+              color: COLORS.GrayPrimary,
+              textAlign: 'center',
+              fontWeight: 'bold',
+              opacity: 0.6,
+            }}
+          >
+            You've reached end.
+          </Text>
         </View>
       ) : null}
     </View>
