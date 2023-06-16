@@ -8,11 +8,11 @@ import {
   Text,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { ChartData } from '../../types';
-import { COLORS } from '../../constants/theme';
-import { getDistance } from '../../utils';
+import { ChartData } from '../../../types';
+import { COLORS } from '../../../constants/theme';
+import { getDistance } from '../../../utils';
 import { ReactNativeZoomableView } from '@openspacelabs/react-native-zoomable-view';
-import VerticalBarForGraph from './VerticalBarForChart';
+import VerticalBarForGraph from '../VerticalBarForChart/VerticalBarForChart';
 
 type Props = {
   chartData: ChartData;
@@ -23,10 +23,8 @@ export const CHART_WIDTH = 1000;
 export const CHART_START_X = -CHART_WIDTH + (3 * SCREEN_WIDTH) / 2;
 export const CHART_HEIGHT = 500;
 const LineGraphWithZoom: React.FC<Props> = React.memo(({ chartData }) => {
-
   const maxValue = useMemo(() => Math.max(...chartData.datasets[0].data), []);
-  const minValue = useMemo(() => Math.min(...chartData.datasets[0].data), [])
-
+  const minValue = useMemo(() => Math.min(...chartData.datasets[0].data), []);
 
   return (
     <ReactNativeZoomableView
@@ -47,7 +45,7 @@ const LineGraphWithZoom: React.FC<Props> = React.memo(({ chartData }) => {
           withHorizontalLines={false}
           chartConfig={{
             backgroundGradientFrom: '#000000', // Black background
-            backgroundGradientTo: '#000000', // Dark gray background
+            backgroundGradientTo: '#100010', // Dark gray background
             decimalPlaces: 0,
             color: (opacity = 0) => `rgba(255, 50, 50, 1)`, // Red line color
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White label color
@@ -67,10 +65,12 @@ const LineGraphWithZoom: React.FC<Props> = React.memo(({ chartData }) => {
             paddingTop: 0,
             margin: 0,
           }}
-
         />
-        <VerticalBarForGraph chartData={chartData} maxValue={maxValue} minValue={minValue} />
-
+        <VerticalBarForGraph
+          chartData={chartData}
+          maxValue={maxValue}
+          minValue={minValue}
+        />
       </View>
     </ReactNativeZoomableView>
   );

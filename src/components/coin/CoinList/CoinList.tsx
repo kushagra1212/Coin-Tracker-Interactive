@@ -15,24 +15,24 @@ import {
 } from 'react-native';
 import { ViewToken } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DataItem, SortBy } from '../../types';
+import { DataItem, SortBy } from '../../../types';
 
-import { throttle } from '../../utils';
+import { throttle } from '../../../utils';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParamListBase, useFocusEffect } from '@react-navigation/native';
-import RenderCoin from './RenderCoin';
-import LoadingComponent from './Loading';
-import RenderFooter from './RenderFooter';
-import { database } from '../../sqlite-storage/database';
-import { COLORS } from '../../constants/theme';
+import RenderCoin from '../RenderCoin/RenderCoin';
+import LoadingComponent from '../Loading/Loading';
+import RenderFooter from '../RenderFooter/RenderFooter';
+import { database } from '../../../sqlite-storage/database';
+import { COLORS } from '../../../constants/theme';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import {
   connectWebSocket,
   disconnectWebSocket,
   getWebSocket,
-} from '../../web-socket/web-socket';
-import CoinListSekeleton from '../CoinListSekeleton';
-import CoinListHeader from './CoinListHeader';
+} from '../../../web-socket/web-socket';
+import CoinListSekeleton from '../../Loading/CoinListSekeleton';
+import CoinListHeader from '../CoinListHeader/CoinListHeader';
 type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
 };

@@ -4,35 +4,22 @@ import {
   Dimensions,
   TouchableOpacity,
   Text,
-  PanResponder,
-  Animated,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
   Image,
 } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { Svg, Circle, Line } from 'react-native-svg';
-import { ChartData, DataItem, IDataItem, TimeRange } from '../../types';
-import { COLORS, FONTS, SIZES } from '../../constants/theme';
-import Icon from 'react-native-vector-icons/AntDesign';
+import { ChartData, IDataItem, TimeRange } from '../../../types';
+import { COLORS, FONTS } from '../../../constants/theme';
 import {
   TIME_RANGE_LIST,
-  generateAllTimeLabels,
-  generateDailyLabels,
-  generateHourlyLabels,
-  generateLabelsForAMonthDayWise,
-  generateMonthlyLabels,
-  generateYearToDateLabels,
-  generateYearlyLabels,
   getIntervalandLimit,
   getLabels,
-} from '../../utils';
-import SkeletonLoader from '../SkeletonLoader';
-import LineGraphSkeleton from '../LineChartSekeleton';
-import CryptoLineGraphSekeleton from '../CryptoLineChartSekeleton';
-import LineGraphWithZoom from './LineChartWithZoom ';
-import PriceChangeComponent from './PriceChangeComponent';
+} from '../../../utils';
+import LineGraphSkeleton from '../../Loading/LineChartSekeleton';
+import CryptoLineGraphSekeleton from '../../Loading/CryptoLineChartSekeleton';
+import LineGraphWithZoom from '../LineChartWithZoom/LineChartWithZoom ';
+import PriceChangeComponent from '../PriceChangeComponent/PriceChangeComponent';
+import styles from './styles';
 type props = {
   coinSymbol: string;
   initialVolume: string;
@@ -40,7 +27,6 @@ type props = {
 
 const CryptoLineGraph: React.FC<props> = React.memo(
   ({ coinSymbol, initialVolume }) => {
-    const [selectedMonth, setSelectedMonth] = useState<number>(3);
     const [chartData, setChartData] = useState<ChartData>({
       labels: [],
       datasets: [
@@ -53,9 +39,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       TimeRange.TODAY
     );
     const [latestData, setLatestData] = useState<IDataItem | null>(null);
-    const [chartWidth, setChartWidth] = useState(
-      Dimensions.get('window').width
-    );
+
     const [loading, setLoading] = useState<boolean>(false);
     const COIN_SYMBOL = useMemo(
       () => coinSymbol.replace('USDT', '').toLowerCase(),
@@ -110,27 +94,24 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       return (
         <TouchableOpacity
           onPress={() => handleTimeRangeClick(timeRange)}
-          style={{
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-            marginLeft: 7,
-            backgroundColor:
-              selectedTimeRange === timeRange ? COLORS.white : COLORS.blackPure,
-            borderRadius: 5,
-            borderWidth: 0.2,
-            borderColor: COLORS.lightGraySecondary,
-            elevation: 5,
-          }}
+          style={[
+            styles.timeRangeButton,
+            {
+              backgroundColor:
+                selectedTimeRange === timeRange
+                  ? COLORS.white
+                  : COLORS.blackPure,
+            },
+          ]}
         >
           <Text
             style={[
-              FONTS.body3,
+              styles.timeRangeButtonText,
               {
                 color:
                   selectedTimeRange !== timeRange
                     ? COLORS.GrayPrimary
                     : COLORS.blackPure,
-                fontWeight: '700',
               },
             ]}
           >
@@ -166,8 +147,8 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         showChange,
         icon,
         sign,
-      }
-    }
+      };
+    };
     const CoinLineChartHeader = React.memo(() => {
       const formatedLastPrice = parseFloat(latestData.lastPrice).toLocaleString(
         undefined,
@@ -177,41 +158,20 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         }
       );
 
-      const { priceDiff, priceDiffPercentage, showChange, icon, sign } = getPriceVariables();
-      const formattedVolume = parseFloat(latestData.volume).toLocaleString(
-        undefined,
-        {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }
-      );
+      const { priceDiff, priceDiffPercentage, showChange, icon, sign } =
+        getPriceVariables();
 
       const formattedPriceDiffPercentage = `${priceDiff
         .toFixed(2)
         .replace('-', '')} (${priceDiffPercentage
-          .toFixed(2)
-          .toString()
-          .replace('-', '')} %)`;
+        .toFixed(2)
+        .toString()
+        .replace('-', '')} %)`;
 
       return (
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            height: 100,
-            backgroundColor: COLORS.blackPure,
-            padding: 5,
-            paddingLeft: 15,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'flex-start',
-              alignItems: 'flex-start',
-            }}
-          >
-            <Text style={styles.header_text}>
+        <View style={styles.headerContainer}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerText}>
               {latestData.symbol.replace('USDT', '')} 1 = $ {formatedLastPrice}
             </Text>
             {showChange ? (
@@ -227,37 +187,27 @@ const CryptoLineGraph: React.FC<props> = React.memo(
     });
 
     const FooterComponent = () => {
-      const { priceDiff, priceDiffPercentage, showChange, icon, sign } = getPriceVariables();
+      const { priceDiff, priceDiffPercentage, showChange, icon, sign } =
+        getPriceVariables();
       const formattedVolume = parseFloat(latestData.volume).toLocaleString();
 
       const formattedPriceDiffPercentage = `${priceDiff
         .toFixed(2)
         .replace('-', '')} (${priceDiffPercentage
-          .toFixed(2)
-          .toString()
-          .replace('-', '')} %)`;
+        .toFixed(2)
+        .toString()
+        .replace('-', '')} %)`;
+
       return (
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            marginVertical: 40,
-          }}
-        >
+        <View style={styles.footerContainer}>
           <Image
             source={{
               uri: `https://coinicons-api.vercel.app/api/icon/${COIN_SYMBOL}`,
             }}
-            style={{
-              width: 60,
-              height: 60,
-              opacity: 0.9,
-            }}
+            style={styles.footerImage}
           />
-          <View style={{ display: 'flex', flexDirection: 'column' }}>
-            <Text style={styles.header_text}>$ {formattedVolume}</Text>
+          <View style={styles.footerContent}>
+            <Text style={styles.footerText}>$ {formattedVolume}</Text>
 
             {showChange ? (
               <PriceChangeComponent
@@ -271,7 +221,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       );
     };
     return (
-      <View style={{ flex: 1, backgroundColor: COLORS.blackPure }}>
+      <View style={styles.container}>
         <CoinLineChartHeader />
         {/* Line Chart */}
         {!loading ? (
@@ -285,12 +235,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
           />
         )}
         {/* Time Range Buttons */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-          }}
-        >
+        <View style={styles.timeRangeContainer}>
           <FlatList
             data={TIME_RANGE_LIST}
             renderItem={({ item }) =>
@@ -303,48 +248,10 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         </View>
 
         <FooterComponent />
-
-        {/* Vertical Line */}
-        {/* {selectedMonth !== null && (
-        <Svg
-          width={Dimensions.get('window').width}
-          height={200}
-          style={{ position: 'absolute' }}
-        >
-          <Line
-            x1={
-              (Dimensions.get('window').width / chartData.labels.length) *
-              selectedMonth
-            }
-            y1={0}
-            x2={
-              (Dimensions.get('window').width / chartData.labels.length) *
-              selectedMonth
-            }
-            y2={200}
-            stroke="white"
-            strokeWidth={2}
-          />
-          <Circle
-            cx={
-              (Dimensions.get('window').width / chartData.labels.length) *
-              selectedMonth
-            }
-            cy={100}
-            r={6}
-            fill="white"
-          />
-        </Svg>
-      )} */}
       </View>
     );
   }
 );
-const styles = StyleSheet.create({
-  header_text: {
-    ...{ color: COLORS.white, fontWeight: '700' },
-    ...FONTS.h1,
-  },
-});
+
 
 export default CryptoLineGraph;

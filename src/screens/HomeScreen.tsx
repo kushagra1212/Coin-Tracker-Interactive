@@ -16,7 +16,7 @@ import performance, {
   setResourceLoggingEnabled,
 } from 'react-native-performance';
 import { getNativeMarkPerformanceLogs } from '../utils';
-import CoinList from '../components/coin/CoinList';
+import CoinList from '../components/coin/CoinList/CoinList';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 setResourceLoggingEnabled(true);
 

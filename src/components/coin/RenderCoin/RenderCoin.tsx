@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
-import { DataItem } from '../../types';
+import { DataItem } from '../../../types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParamListBase } from '@react-navigation/native';
-import { getValueAndColor, getVariables } from '../../utils';
+import { getValueAndColor, getVariables } from '../../../utils';
 import Icon from 'react-native-vector-icons/AntDesign';
-import { COLORS, FONTS } from '../../constants/theme';
-import { Database } from '../../sqlite-storage/database';
+import { COLORS, FONTS } from '../../../constants/theme';
+import { Database } from '../../../sqlite-storage/database';
+import styles from './styles';
 
 type props = {
   item: DataItem;
@@ -68,18 +69,7 @@ const RenderCoin: React.FC<props> = ({
   }, [COIN_SYMBOL]);
   return (
     <TouchableOpacity
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: COLORS.blackPure,
-        height: 100,
-        padding: 10,
-        paddingRight: 0,
-        marginTop: 5,
-        borderRadius: 10,
-      }}
+      style={styles.container}
       onPress={handleNavigationToCoinScreen}
     >
       <Image
@@ -88,55 +78,29 @@ const RenderCoin: React.FC<props> = ({
             .replace('USDT', '')
             .toLowerCase()}`,
         }}
-        style={{
-          width: 60,
-          height: 60,
-          opacity: 0.8,
-          borderRadius: 50,
-        }}
+        style={styles.coinImage}
       />
 
       <View
-        style={{
-          width: 100,
-        }}
+        style={styles.coinInfoContainer}
       >
         <Text
-          style={[
-            FONTS.h4,
-            {
-              color: COLORS.white,
-              fontWeight: 'bold',
-            },
-          ]}
+          style={styles.coinSymbol}
         >
           {COIN_SYMBOL}
         </Text>
         <Text
-          style={[
-            FONTS.h4,
-            {
-              color: COLORS.white,
-              fontWeight: 'bold',
-              fontSize: 12,
-              opacity: 0.8,
-              textAlign: 'left',
-            },
-          ]}
+          style={styles.coinName}
         >
           {cryptoName}
         </Text>
       </View>
 
       <View
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: 200,
-        }}
+        style={styles.priceInfoContainer}
       >
         <Text
-          style={[FONTS.body4, { color: COLORS.white, fontWeight: 'bold' }]}
+          style={styles.priceText}
         >
           {priceVar.isChanged ? (
             <Icon

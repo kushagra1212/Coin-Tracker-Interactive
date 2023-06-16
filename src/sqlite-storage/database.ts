@@ -173,7 +173,6 @@ export class Database {
                 const name = results[0].rows.item(0).name;
                 resolve(name);
               } else {
-                console.log('No name found');
                 resolve('');
               }
             })
