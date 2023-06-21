@@ -20,6 +20,7 @@ import CryptoLineGraphSekeleton from '../../Loading/CryptoLineChartSekeleton';
 import LineGraphWithZoom from '../LineChartWithZoom/LineChartWithZoom ';
 import PriceChangeComponent from '../PriceChangeComponent/PriceChangeComponent';
 import styles from './styles';
+import { PerformanceMeasureView } from '@shopify/react-native-performance';
 type props = {
   coinSymbol: string;
   initialVolume: string;
@@ -130,7 +131,11 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       };
     }, []);
     if (latestData === null) {
-      return <CryptoLineGraphSekeleton />;
+      return (
+        <PerformanceMeasureView interactive={false} screenName="Coin">
+          <CryptoLineGraphSekeleton />
+        </PerformanceMeasureView>
+      );
     }
     const getPriceVariables = () => {
       const currentPrice = parseFloat(latestData.lastPrice);
@@ -221,37 +226,37 @@ const CryptoLineGraph: React.FC<props> = React.memo(
       );
     };
     return (
-      <View style={styles.container}>
-        <CoinLineChartHeader />
-        {/* Line Chart */}
-        {!loading ? (
-          <LineGraphWithZoom chartData={chartData} />
-        ) : (
-          <LineGraphSkeleton
-            width={Dimensions.get('window').width}
-            height={500}
-            duration={500}
-            lineColor={`rgba(255, 40, 40, 0.3)`}
-          />
-        )}
-        {/* Time Range Buttons */}
-        <View style={styles.timeRangeContainer}>
-          <FlatList
-            data={TIME_RANGE_LIST}
-            renderItem={({ item }) =>
-              renderTimeRangeButton(item.value, item.text)
-            }
-            keyExtractor={(item) => item.value.toString()}
-            horizontal
-            style={{ marginBottom: 10 }}
-          />
+      <PerformanceMeasureView interactive={true} screenName="Coin">
+        <View style={styles.container}>
+          <CoinLineChartHeader />
+          {/* Line Chart */}
+          {!loading ? (
+            <LineGraphWithZoom chartData={chartData} />
+          ) : (
+            <LineGraphSkeleton
+              width={Dimensions.get('window').width}
+              height={500}
+              duration={500}
+              lineColor={`rgba(255, 40, 40, 0.3)`}
+            />
+          )}
+          {/* Time Range Buttons */}
+          <View style={styles.timeRangeContainer}>
+            <FlatList
+              data={TIME_RANGE_LIST}
+              renderItem={({ item }) =>
+                renderTimeRangeButton(item.value, item.text)
+              }
+              keyExtractor={(item) => item.value.toString()}
+              horizontal
+              style={{ marginBottom: 10 }}
+            />
+          </View>
+          <FooterComponent />
         </View>
-
-        <FooterComponent />
-      </View>
+      </PerformanceMeasureView>
     );
   }
 );
-
 
 export default CryptoLineGraph;

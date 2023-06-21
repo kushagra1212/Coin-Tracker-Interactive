@@ -86,15 +86,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   footerContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
     marginVertical: 50,
   },
   footerContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+      justifyContent: 'space-around',
   },
   footerIcon: {
     height: 60,

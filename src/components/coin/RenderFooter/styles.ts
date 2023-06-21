@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
-    marginTop: -20,
+    marginTop: 0,
   },
   reachedEndContainer: {
     display: 'flex',

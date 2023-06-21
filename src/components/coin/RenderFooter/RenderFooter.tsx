@@ -18,9 +18,7 @@ const RenderFooter: React.FC<props> = React.memo(({ loading, reachedEnd }) => {
         <CoinListSekeleton amount={5} /> // Render the CoinListSkeleton component while loading
       ) : reachedEnd ? (
         <View style={styles.reachedEndContainer}>
-          <Text style={styles.reachedEndText}>
-            You've reached the end.
-          </Text>
+          <Text style={styles.reachedEndText}>You've reached the end.</Text>
         </View>
       ) : null}
     </View>

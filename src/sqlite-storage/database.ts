@@ -54,7 +54,12 @@ export class Database {
   }
 
   private isValidElement = (item: DataItem) => {
-    return item.lastPrice && item.symbol && item.volume;
+    return (
+      item.lastPrice &&
+      item.symbol &&
+      item.volume &&
+      item.symbol.endsWith('USDT')
+    );
   };
   private fetchDataAndStore(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -62,14 +67,10 @@ export class Database {
       fetch('https://api.binance.com/api/v3/ticker/24hr')
         .then((response) => response.json())
         .then((data: DataItem[]) => {
-          const filteredData = data.filter((item) =>
-            item.symbol.endsWith('USDT')
-          );
           const updateData = [];
-          const size = filteredData.length;
+          const size = data.length;
           for (let i = 0; i < size; i++) {
-            if (this.isValidElement(filteredData[i]))
-              updateData.push(filteredData[i]);
+            if (this.isValidElement(data[i])) updateData.push(data[i]);
           }
           console.log('data fetched successfully');
           this.insertData(updateData)
@@ -197,7 +198,8 @@ export class Database {
                 const storedTime = results[0].rows.item(0).storeTime;
                 const currentTime = Date.now();
                 const timeDifference = currentTime - storedTime;
-                if (timeDifference >= 1000000) {
+                const TIME_GAP = 300000;
+                if (timeDifference >= TIME_GAP) {
                   // 24 hours  in milliseconds 86400000
                   console.log('timeDifference', timeDifference);
                   tx.executeSql(
@@ -215,7 +217,9 @@ export class Database {
                   );
                 } else {
                   console.log(
-                    'No need to update the time_table :  less than 24 hours'
+                    `No need to update the time_table :  less than 24 hours | ${
+                      (TIME_GAP - timeDifference) / 1000
+                    }s left`
                   );
                   resolve(false);
                 }

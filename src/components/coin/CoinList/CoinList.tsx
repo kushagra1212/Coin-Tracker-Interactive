@@ -25,7 +25,13 @@ import LoadingComponent from '../Loading/Loading';
 import RenderFooter from '../RenderFooter/RenderFooter';
 import { database } from '../../../sqlite-storage/database';
 import { COLORS } from '../../../constants/theme';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { FlashList } from '@shopify/flash-list';
+
+import {
+  GestureResponderEvent,
+  PerformanceMeasureView,
+  useStartProfiler,
+} from '@shopify/react-native-performance';
 import {
   connectWebSocket,
   disconnectWebSocket,
@@ -37,9 +43,11 @@ type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
 };
 
-const CoinList: React.FC<props> = React.memo(({ navigation }) => {
+const CoinList: React.FC<props> = ({ navigation }) => {
+  const startNavigationTTITimer = useStartProfiler();
+
   let reconnectAttemptsRef = useRef<number>(0).current;
-  const flatListRef = useRef<FlatList<DataItem> | null>(null);
+  const flatListRef = useRef<FlashList<DataItem> | null>(null);
 
   const [sortBy, setSortBy] = useState<SortBy>({
     type: 'lastPrice',
@@ -49,10 +57,12 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   const [currentWindow, setCurrentWindow] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [reachedEnd, setReachedEnd] = useState<boolean>(false);
-  const [initialFetchLoad, setInitialFetchLoad] = useState<boolean>(true);
+  const [initialFetchLoad, setInitialFetchLoad] = useState<
+    boolean | undefined
+  >();
   const [loadOtherScreen, setLoadOtherScreen] = useState<boolean>(false);
   const [scrollSymbol, setScrollSymbol] = useState<string>('');
-  const windowSize = 10;
+  const windowSize = 50;
   const webSocketHandler = (
     event: WebSocketMessageEvent,
     viewableItems: ViewToken[]
@@ -127,10 +137,10 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     current_window: number,
     start = false
   ) => {
-    if (loading || reachedEnd) return;
     try {
       setSortBy(sort_by);
       setLoading(true);
+      console.log('fetching data');
       if (start === true) setInitialFetchLoad(true);
       let contentSize = windowSize;
       let startIndex = (current_window - 1) * contentSize;
@@ -167,6 +177,8 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   };
 
   const handleSort = async ({ type, order }: SortBy) => {
+    if (loading) return;
+    setReachedEnd(false);
     fetchData(
       {
         type,
@@ -177,6 +189,7 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     );
   };
   const fetchNextWindow = () => {
+    if (loading || reachedEnd) return;
     fetchData(sortBy, currentWindow + 1, false);
   };
   const reconnectWebSocket = () => {
@@ -195,8 +208,16 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     }
   };
 
-  const handleNavigationToCoinScreen = (coinSymbol: string, volume: string) => {
+  const handleNavigationToCoinScreen = (
+    uiEvent: GestureResponderEvent,
+    coinSymbol: string,
+    volume: string
+  ) => {
     setScrollSymbol(coinSymbol);
+    startNavigationTTITimer({
+      source: 'Home',
+      uiEvent,
+    });
     const removeWebSocketHandler = () => {
       return () => {
         disconnectWebSocket();
@@ -216,8 +237,8 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
     return (
       <RenderCoin
         item={item}
-        handleNavigationToCoinScreen={() =>
-          handleNavigationToCoinScreen(item.symbol, item.volume)
+        handleNavigationToCoinScreen={(uiEvent: GestureResponderEvent) =>
+          handleNavigationToCoinScreen(uiEvent, item.symbol, item.volume)
         }
       />
     );
@@ -251,30 +272,40 @@ const CoinList: React.FC<props> = React.memo(({ navigation }) => {
   });
 
   return (
-    <SafeAreaView
-      style={{ display: 'flex', backgroundColor: COLORS.black, margin: 0 }}
+    <PerformanceMeasureView
+      interactive={initialFetchLoad !== undefined}
+      screenName="Home"
     >
-      <CoinListHeader handleSortBy={handleSort} {...sortBy} />
-      {initialFetchLoad ? (
-        <CoinListSekeleton amount={10} />
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={coins}
-          // viewabilityConfig={{
-          //   minimumViewTime: 0,
-          //   itemVisiblePercentThreshold: 0,
-          // }}
-          initialNumToRender={windowSize}
-          onEndReached={fetchNextWindow}
-          onViewableItemsChanged={onViewableItemsChanged}
-          onEndReachedThreshold={0.5}
-          renderItem={renderItemComponent}
-          ListFooterComponent={renderFooter}
-          keyExtractor={(item, index) => item.symbol}
-        />
-      )}
-    </SafeAreaView>
+      <SafeAreaView
+        style={{
+          display: 'flex',
+          backgroundColor: COLORS.black,
+          margin: 0,
+          height: 1000,
+        }}
+      >
+        <CoinListHeader handleSortBy={handleSort} {...sortBy} />
+        {initialFetchLoad ? (
+          <CoinListSekeleton amount={10} />
+        ) : (
+          <FlashList
+            ref={flatListRef}
+            data={coins}
+            // viewabilityConfig={{
+            //   minimumViewTime: 0,
+            //   itemVisiblePercentThreshold: 0,
+            // }}
+            onEndReached={fetchNextWindow}
+            onViewableItemsChanged={onViewableItemsChanged}
+            onEndReachedThreshold={2}
+            estimatedItemSize={2000}
+            renderItem={renderItemComponent}
+            ListFooterComponent={renderFooter}
+            keyExtractor={(item, index) => item.symbol}
+          />
+        )}
+      </SafeAreaView>
+    </PerformanceMeasureView>
   );
-});
+};
 export default CoinList;

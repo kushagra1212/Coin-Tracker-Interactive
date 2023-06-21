@@ -8,10 +8,11 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import { COLORS, FONTS } from '../../../constants/theme';
 import { Database } from '../../../sqlite-storage/database';
 import styles from './styles';
+import { GestureResponderEvent } from '@shopify/react-native-performance';
 
 type props = {
   item: DataItem;
-  handleNavigationToCoinScreen: () => void;
+  handleNavigationToCoinScreen: (uiEvent: GestureResponderEvent) => void;
 };
 const RenderCoin: React.FC<props> = ({
   item,
@@ -70,7 +71,9 @@ const RenderCoin: React.FC<props> = ({
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={handleNavigationToCoinScreen}
+      onPress={(uiEvent: GestureResponderEvent) =>
+        handleNavigationToCoinScreen(uiEvent)
+      }
     >
       <Image
         source={{
@@ -81,27 +84,13 @@ const RenderCoin: React.FC<props> = ({
         style={styles.coinImage}
       />
 
-      <View
-        style={styles.coinInfoContainer}
-      >
-        <Text
-          style={styles.coinSymbol}
-        >
-          {COIN_SYMBOL}
-        </Text>
-        <Text
-          style={styles.coinName}
-        >
-          {cryptoName}
-        </Text>
+      <View style={styles.coinInfoContainer}>
+        <Text style={styles.coinSymbol}>{COIN_SYMBOL}</Text>
+        <Text style={styles.coinName}>{cryptoName}</Text>
       </View>
 
-      <View
-        style={styles.priceInfoContainer}
-      >
-        <Text
-          style={styles.priceText}
-        >
+      <View style={styles.priceInfoContainer}>
+        <Text style={styles.priceText}>
           {priceVar.isChanged ? (
             <Icon
               name={priceVar.icon}

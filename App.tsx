@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -25,31 +25,10 @@ import { COINS } from './src/utils';
 import { DataItem } from './src/types';
 import { database } from './src/sqlite-storage/database';
 import { connectWebSocket } from './src/web-socket/web-socket';
-
-// SQLite.openDatabase({
-//   name: 'coins.db',
-//   location: 'default',
-// })
-//   .then((db) => {
-//     db.executeSql(
-//       'CREATE TABLE IF NOT EXISTS myTable (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, volume TEXT, lastPrice TEXT)',
-//       [],
-//       () => {
-//         console.log('Table created successfully');
-//       },
-//       (trans, error) => {
-//         console.log('Error creating table:', error);
-//         if (error.code === 5) {
-//           console.log('Table already exists');
-//         } else {
-//           console.log('Error creating table:', error);
-//         }
-//       }
-//     );
-//   })
-//   .catch((error) => {
-//     console.log('Received error: ', error);
-//   });
+import {
+  RenderPassReport,
+  PerformanceProfiler,
+} from '@shopify/react-native-performance';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -61,6 +40,54 @@ export type RootStackParamList = {
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 function App(): JSX.Element {
+  const formatDuration = (duration: number | undefined): string => {
+    if (!duration) return '';
+    const seconds = Math.floor(duration / 1000);
+    const milliseconds = duration % 1000;
+    return `${seconds}s ${milliseconds}ms`;
+  };
+  const printReport = (report: RenderPassReport): void => {
+    console.log('Render Pass Report');
+    console.log('Report ID:', report.reportId);
+    console.log('Flow Instance ID:', report.flowInstanceId);
+    console.log('Source Screen:', report.sourceScreen || 'N/A');
+    console.log('Destination Screen:', report.destinationScreen);
+    console.log(
+      'Flow Start Time:',
+      new Date(report.flowStartTimeSinceEpochMillis).toString()
+    );
+    console.log(
+      'Time to Consume Touch Event:',
+      report.timeToConsumeTouchEventMillis
+        ? formatDuration(report.timeToConsumeTouchEventMillis)
+        : 'N/A'
+    );
+
+    console.log(
+      'Time to Boot JS:',
+      report.timeToBootJsMillis
+        ? formatDuration(report.timeToBootJsMillis)
+        : 'N/A'
+    );
+    console.log('Render Pass Name:', report.renderPassName || 'N/A');
+    console.log(
+      'Time to Render:',
+      report.timeToRenderMillis
+        ? formatDuration(report.timeToRenderMillis)
+        : 'N/A'
+    );
+    console.log(
+      'Time to Abort:',
+      report.timeToAbortMillis
+        ? formatDuration(report.timeToAbortMillis)
+        : 'N/A'
+    );
+    console.log('Interactive:', report.interactive);
+  };
+
+  const onReportPrepared = useCallback((report: RenderPassReport) => {
+    printReport(report);
+  }, []);
   const isDarkMode = useColorScheme() === 'dark';
   const [unmounted, setUnmunted] = useState(false);
   const [appLoad, setAppLoad] = useState<boolean>(true);
@@ -92,36 +119,38 @@ function App(): JSX.Element {
     );
   }
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <NavigationContainer>
-        <RootStack.Navigator initialRouteName={'Home'}>
-          <RootStack.Screen
-            options={{ headerShown: false }}
-            name="Home"
-            component={HomeScreen}
-          />
-          <RootStack.Screen
-            options={{
-              headerShown: true,
-              headerBackground: () => (
-                <View
-                  style={{
-                    backgroundColor: '#000',
-                    flex: 1,
-                  }}
-                />
-              ),
-            }}
-            name="Coin"
-            component={CoinScreen}
-          />
-        </RootStack.Navigator>
-      </NavigationContainer>
-    </SafeAreaView>
+    <PerformanceProfiler onReportPrepared={onReportPrepared}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        <NavigationContainer>
+          <RootStack.Navigator initialRouteName="Home">
+            <RootStack.Screen
+              options={{ headerShown: false }}
+              name="Home"
+              component={HomeScreen}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                headerBackground: () => (
+                  <View
+                    style={{
+                      backgroundColor: '#000',
+                      flex: 1,
+                    }}
+                  />
+                ),
+              }}
+              name="Coin"
+              component={CoinScreen}
+            />
+          </RootStack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </PerformanceProfiler>
   );
 }
 const styles = StyleSheet.create({

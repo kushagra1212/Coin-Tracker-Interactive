@@ -70,9 +70,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   // }, [loading]);
 
   return (
-    <Profiler id="App.render()" onRender={traceRender}>
-      <SafeAreaView>
-        {/* <TouchableOpacity onPress={() => navigation.navigate('Coin')}>
+    <SafeAreaView>
+      {/* <TouchableOpacity onPress={() => navigation.navigate('Coin')}>
           <Text
             style={{
               color: 'blue',
@@ -82,9 +81,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             See Coin
           </Text>
         </TouchableOpacity> */}
-        <CoinList navigation={navigation} />
-      </SafeAreaView>
-    </Profiler>
+      <CoinList navigation={navigation} />
+    </SafeAreaView>
   );
 };
 

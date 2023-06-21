@@ -1745,6 +1745,19 @@
   dependencies:
     nanoid "^3.1.23"
 
+"@shopify/flash-list@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@shopify/flash-list/-/flash-list-1.4.3.tgz#b7a4fe03d64f3c5ce9646859b49b9d95307f203d"
+  integrity sha512-jtIReAbwWzYBV0dQ6Io9wBX+pD0C4qQFMrb5/fkEvX8PYDgBl5KRYvpfr9WLLj8CV2Jsn1X0mYOsB+ysWrI/8g==
+  dependencies:
+    recyclerlistview "4.2.0"
+    tslib "2.4.0"
+
+"@shopify/react-native-performance@^4.1.2":
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@shopify/react-native-performance/-/react-native-performance-4.1.2.tgz#bd111af291b85ee125feaccd54c8e5f237a76ce7"
+  integrity sha512-1Xu2xo+hAxg75iuX5akVqAgc3h/J1ohfi7JKXlGsprP4ylpW7kHMfq/7AstL7FoUC8xcHsTUvUFhoZ94ot8g6Q==
+
 "@sideway/address@^4.1.3":
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/@sideway/address/-/address-4.1.4.tgz#03dccebc6ea47fdc226f7d3d1ad512955d4783f0"
@@ -4720,7 +4733,7 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-lodash.debounce@^4.0.8:
+lodash.debounce@4.0.8, lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==
@@ -5663,7 +5676,7 @@ prompts@^2.0.1, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@*, prop-types@^15.7.2, prop-types@^15.8.1:
+prop-types@*, prop-types@15.8.1, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -5705,7 +5718,7 @@ range-parser@~1.2.1:
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
-react-devtools-core@^4.26.1:
+react-devtools-core@^4.26.1, react-devtools-core@^4.27.8:
   version "4.27.8"
   resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-4.27.8.tgz#b7b387b079c14ae9a214d4846a402da2b6efd164"
   integrity sha512-KwoH8/wN/+m5wTItLnsgVraGNmFrcTWR3k1VimP1HjtMMw4CNF+F5vg4S/0tzTEKIdpCi2R7mPNTC+/dswZMgw==
@@ -5751,6 +5764,16 @@ react-native-codegen@^0.71.5:
     flow-parser "^0.185.0"
     jscodeshift "^0.13.1"
     nullthrows "^1.1.1"
+
+react-native-flipper-performance-plugin@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-flipper-performance-plugin/-/react-native-flipper-performance-plugin-0.4.0.tgz#961ff2f9ccc942d2a4cabd4f6d401034c5402007"
+  integrity sha512-D9Z5VrktJjUenYB4X9qfKcqg9YSyQWOD7fKoxkzXoKxbyalGoWib79iD3OBHOBZEsk5RbQ006zYL7VQwA3D4Wg==
+
+react-native-flipper@^0.200.0:
+  version "0.200.0"
+  resolved "https://registry.yarnpkg.com/react-native-flipper/-/react-native-flipper-0.200.0.tgz#17af94c56286ba734d5b2f69879e383e24fdfc2c"
+  integrity sha512-P8EDgBN9PEIEfx3SOwsNw2kXVFlnvburaq4tLQ/U+5hHiYRx0mL7c+V1MRKRgtlgoV7IqJVw9WtU/PkfWMWXOA==
 
 react-native-gradle-plugin@^0.71.18:
   version "0.71.19"
@@ -5901,6 +5924,15 @@ recast@^0.20.4:
     esprima "~4.0.0"
     source-map "~0.6.1"
     tslib "^2.0.1"
+
+recyclerlistview@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/recyclerlistview/-/recyclerlistview-4.2.0.tgz#a140149aaa470c9787a1426452651934240d69ef"
+  integrity sha512-uuBCi0c+ggqHKwrzPX4Z/mJOzsBbjZEAwGGmlwpD/sD7raXixdAbdJ6BTcAmuWG50Cg4ru9p12M94Njwhr/27A==
+  dependencies:
+    lodash.debounce "4.0.8"
+    prop-types "15.8.1"
+    ts-object-utils "0.0.5"
 
 regenerate-unicode-properties@^10.1.0:
   version "10.1.0"
@@ -6625,6 +6657,16 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
+
+ts-object-utils@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/ts-object-utils/-/ts-object-utils-0.0.5.tgz#95361cdecd7e52167cfc5e634c76345e90a26077"
+  integrity sha512-iV0GvHqOmilbIKJsfyfJY9/dNHCs969z3so90dQWsO1eMMozvTpnB1MEaUbb3FYtZTGjv5sIy/xmslEz0Rg2TA==
+
+tslib@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
+  integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
 
 tslib@^1.8.1:
   version "1.14.1"
