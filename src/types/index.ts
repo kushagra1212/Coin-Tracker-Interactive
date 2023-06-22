@@ -1,3 +1,5 @@
+import { RenderPassReport } from '@shopify/react-native-performance';
+
 export interface ICoin {
   s: string;
   c: string;
@@ -40,3 +42,12 @@ export interface IDataItem {
     prev: undefined;
   };
 }
+export type RootStackParamList = {
+  Home: {
+    onReportPrepared: (report: RenderPassReport) => void;
+  };
+  Coin: {
+    coinSymbol: string;
+    initialVolume: string;
+  };
+};

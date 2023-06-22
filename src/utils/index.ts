@@ -1,8 +1,5 @@
-import { PerformanceEntry } from 'react-native-performance';
-
-import { InteractionManager } from 'react-native';
-import { TimeRange } from '../types';
 import { COLORS } from '../constants/theme';
+import { TimeRange } from '../types';
 
 export const getValueAndColor = (
   nextValue: string,
@@ -61,48 +58,59 @@ export const getVariables = (initial: string, old: string | undefined) => {
   const icon = diff < 0 ? 'caretdown' : 'caretup';
   return { sign, percent, showChange, icon };
 };
-export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
-  if (!list) {
-    return [];
-  }
-  let visited: any = {};
-  let nativeMarkPerformanceObj: any = {};
-  let nativeMarkPerformanceList = [];
-  const n = list.length;
-  for (let i = 0; i < n; i++) {
-    nativeMarkPerformanceObj[list[i].name] = list[i].startTime;
-  }
-
-  for (let i = 0; i < n; i++) {
-    if (!list[i].name) {
-      continue;
-    }
-    const str = list[i].name;
-    let prefix = '';
-    if (str.includes('Start')) {
-      prefix = str.replace('Start', '');
-    } else if (str.includes('End')) {
-      prefix = str.replace('End', '');
-    }
-    if (
-      prefix &&
-      prefix !== '' &&
-      !visited[prefix] &&
-      nativeMarkPerformanceObj[`${prefix}Start`] &&
-      nativeMarkPerformanceObj[`${prefix}End`]
-    ) {
-      visited[prefix] = true;
-      nativeMarkPerformanceList.push(
-        `${
-          nativeMarkPerformanceObj[`${prefix}End`] -
-          nativeMarkPerformanceObj[`${prefix}Start`]
-        }ms : ${prefix} Duration `
-      );
-    }
-  }
-
-  return nativeMarkPerformanceList;
+export const formatDuration = (duration: number | undefined): string => {
+  if (!duration) return '';
+  const seconds = Math.floor(duration / 1000);
+  const milliseconds = duration % 1000;
+  return `${seconds}s ${milliseconds}ms`;
 };
+
+/*{
+  React Native Performance Library Code
+}
+*/
+// export const getNativeMarkPerformanceLogs = (list: PerformanceEntry[]) => {
+//   if (!list) {
+//     return [];
+//   }
+//   let visited: any = {};
+//   let nativeMarkPerformanceObj: any = {};
+//   let nativeMarkPerformanceList = [];
+//   const n = list.length;
+//   for (let i = 0; i < n; i++) {
+//     nativeMarkPerformanceObj[list[i].name] = list[i].startTime;
+//   }
+
+//   for (let i = 0; i < n; i++) {
+//     if (!list[i].name) {
+//       continue;
+//     }
+//     const str = list[i].name;
+//     let prefix = '';
+//     if (str.includes('Start')) {
+//       prefix = str.replace('Start', '');
+//     } else if (str.includes('End')) {
+//       prefix = str.replace('End', '');
+//     }
+//     if (
+//       prefix &&
+//       prefix !== '' &&
+//       !visited[prefix] &&
+//       nativeMarkPerformanceObj[`${prefix}Start`] &&
+//       nativeMarkPerformanceObj[`${prefix}End`]
+//     ) {
+//       visited[prefix] = true;
+//       nativeMarkPerformanceList.push(
+//         `${
+//           nativeMarkPerformanceObj[`${prefix}End`] -
+//           nativeMarkPerformanceObj[`${prefix}Start`]
+//         }ms : ${prefix} Duration `
+//       );
+//     }
+//   }
+
+//   return nativeMarkPerformanceList;
+// };
 
 export const throttle = (func: Function, delay) => {
   let throttling = false;

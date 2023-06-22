@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import SkeletonLoader from './SkeletonLoader';
 import { COLORS } from '../../constants/theme';
 import { StyleSheet } from 'react-native';
@@ -7,7 +7,6 @@ type propsList = {
   amount: number;
 };
 type propsCard = {};
-
 
 export const CoinCardSekeleton: React.FC<propsCard> = React.memo(() => {
   return (
@@ -56,6 +55,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-
 
 export default CoinListSekeleton;

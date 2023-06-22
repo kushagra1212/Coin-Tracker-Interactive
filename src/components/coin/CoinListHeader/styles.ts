@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
     ...FONTS.h4,
     color: COLORS.GrayPrimary,
     padding: 10,
+    paddingLeft: 0,
   },
   sortByButton: {
     borderRadius: 10,

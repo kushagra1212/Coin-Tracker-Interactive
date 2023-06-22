@@ -1,11 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -21,79 +14,43 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from './src/screens/HomeScreen';
 import CoinScreen from './src/screens/CoinScreen';
-import { COINS } from './src/utils';
-import { DataItem } from './src/types';
+import { formatDuration } from './src/utils';
 import { database } from './src/sqlite-storage/database';
-import { connectWebSocket } from './src/web-socket/web-socket';
 import {
   RenderPassReport,
   PerformanceProfiler,
 } from '@shopify/react-native-performance';
+import FlashMessage from 'react-native-flash-message';
 
-export type RootStackParamList = {
-  Home: undefined;
-  Coin: {
-    coinSymbol: string;
-    initialVolume: string;
-  };
-};
+import PerformanceComponent, {
+  IRef,
+} from './src/components/common/PerformanceComponent';
+import { RootStackParamList } from './src/types';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
-function App(): JSX.Element {
-  const formatDuration = (duration: number | undefined): string => {
-    if (!duration) return '';
-    const seconds = Math.floor(duration / 1000);
-    const milliseconds = duration % 1000;
-    return `${seconds}s ${milliseconds}ms`;
-  };
-  const printReport = (report: RenderPassReport): void => {
-    console.log('Render Pass Report');
-    console.log('Report ID:', report.reportId);
-    console.log('Flow Instance ID:', report.flowInstanceId);
-    console.log('Source Screen:', report.sourceScreen || 'N/A');
-    console.log('Destination Screen:', report.destinationScreen);
-    console.log(
-      'Flow Start Time:',
-      new Date(report.flowStartTimeSinceEpochMillis).toString()
-    );
-    console.log(
-      'Time to Consume Touch Event:',
-      report.timeToConsumeTouchEventMillis
-        ? formatDuration(report.timeToConsumeTouchEventMillis)
-        : 'N/A'
-    );
 
-    console.log(
-      'Time to Boot JS:',
-      report.timeToBootJsMillis
-        ? formatDuration(report.timeToBootJsMillis)
-        : 'N/A'
-    );
-    console.log('Render Pass Name:', report.renderPassName || 'N/A');
-    console.log(
-      'Time to Render:',
-      report.timeToRenderMillis
-        ? formatDuration(report.timeToRenderMillis)
-        : 'N/A'
-    );
-    console.log(
-      'Time to Abort:',
-      report.timeToAbortMillis
-        ? formatDuration(report.timeToAbortMillis)
-        : 'N/A'
-    );
-    console.log('Interactive:', report.interactive);
+function App(): JSX.Element {
+  const childRef = useRef<IRef>(null);
+  const errorHandler = useCallback((error: Error) => {}, []);
+  const isDarkMode = useColorScheme() === 'dark';
+
+  const [appLoad, setAppLoad] = useState<boolean>(true);
+  const backgroundStyle = {
+    backgroundColor: Colors.darker,
+  };
+
+  const printReport = (report: RenderPassReport): void => {
+    if (childRef.current) {
+      childRef.current.timeToRenderHandler(
+        formatDuration(report.timeToRenderMillis)
+      );
+    }
   };
 
   const onReportPrepared = useCallback((report: RenderPassReport) => {
     printReport(report);
   }, []);
-  const isDarkMode = useColorScheme() === 'dark';
-  const [unmounted, setUnmunted] = useState(false);
-  const [appLoad, setAppLoad] = useState<boolean>(true);
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+
   const init = async () => {
     try {
       await database.initialize();
@@ -103,14 +60,17 @@ function App(): JSX.Element {
       setAppLoad(false);
     }
   };
-  useEffect(() => {
-    if (unmounted) return;
 
-    init();
+  useEffect(() => {
+    let unmounted = false;
+    if (!unmounted) init();
     return () => {
-      setUnmunted(true);
+      unmounted = true;
     };
   }, []);
+  useEffect(() => {
+    // if (!appLoad) SplashScreen.hide();
+  }, [appLoad]);
   if (appLoad) {
     return (
       <SafeAreaView style={styles.container}>
@@ -119,12 +79,16 @@ function App(): JSX.Element {
     );
   }
   return (
-    <PerformanceProfiler onReportPrepared={onReportPrepared}>
+    <PerformanceProfiler
+      onReportPrepared={onReportPrepared}
+      errorHandler={errorHandler}
+    >
       <SafeAreaView style={styles.container}>
         <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           backgroundColor={backgroundStyle.backgroundColor}
         />
+        <PerformanceComponent ref={childRef} />
         <NavigationContainer>
           <RootStack.Navigator initialRouteName="Home">
             <RootStack.Screen
@@ -150,6 +114,7 @@ function App(): JSX.Element {
           </RootStack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
+      <FlashMessage position="bottom" />
     </PerformanceProfiler>
   );
 }

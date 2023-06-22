@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Dimensions, StyleSheet } from 'react-native';
 import SkeletonLoader from './SkeletonLoader';
 import { FlatList } from 'react-native';
@@ -91,7 +90,7 @@ const styles = StyleSheet.create({
   footerContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-      justifyContent: 'space-around',
+    justifyContent: 'space-around',
   },
   footerIcon: {
     height: 60,

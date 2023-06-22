@@ -1,5 +1,4 @@
 import {
-  ResultSet,
   openDatabase,
   enablePromise,
   SQLiteDatabase,

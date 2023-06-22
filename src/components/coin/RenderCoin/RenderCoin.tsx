@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
 import { DataItem } from '../../../types';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ParamListBase } from '@react-navigation/native';
 import { getValueAndColor, getVariables } from '../../../utils';
 import Icon from 'react-native-vector-icons/AntDesign';
 import { COLORS, FONTS } from '../../../constants/theme';
 import { Database } from '../../../sqlite-storage/database';
 import styles from './styles';
 import { GestureResponderEvent } from '@shopify/react-native-performance';
+import { COIN_IMAGE_ENDPOINT } from '../../../constants/endpoints';
 
 type props = {
   item: DataItem;
@@ -77,7 +76,7 @@ const RenderCoin: React.FC<props> = ({
     >
       <Image
         source={{
-          uri: `https://coinicons-api.vercel.app/api/icon/${symbol
+          uri: `${COIN_IMAGE_ENDPOINT}/${symbol
             .replace('USDT', '')
             .toLowerCase()}`,
         }}

@@ -1,3 +1,5 @@
+import { BINANCE_WEB_SOCKET_ENDPOINT } from '../constants/endpoints';
+
 let webSocket: WebSocket | null = null;
 
 export const getWebSocket = () => webSocket;
@@ -5,7 +7,7 @@ export const getWebSocket = () => webSocket;
 export const connectWebSocket = () => {
   if (!webSocket) {
     console.log('[Connecting to WebSocket...]');
-    webSocket = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
+    webSocket = new WebSocket(BINANCE_WEB_SOCKET_ENDPOINT);
   } else {
     console.log('[WebSocket already connected]');
   }

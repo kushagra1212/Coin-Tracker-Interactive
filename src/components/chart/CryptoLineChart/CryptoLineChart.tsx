@@ -2,32 +2,40 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Dimensions,
-  TouchableOpacity,
   Text,
   FlatList,
-  StyleSheet,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 import { ChartData, IDataItem, TimeRange } from '../../../types';
-import { COLORS, FONTS } from '../../../constants/theme';
 import {
   TIME_RANGE_LIST,
   getIntervalandLimit,
   getLabels,
 } from '../../../utils';
 import LineGraphSkeleton from '../../Loading/LineChartSekeleton';
-import CryptoLineGraphSekeleton from '../../Loading/CryptoLineChartSekeleton';
 import LineGraphWithZoom from '../LineChartWithZoom/LineChartWithZoom ';
 import PriceChangeComponent from '../PriceChangeComponent/PriceChangeComponent';
 import styles from './styles';
 import { PerformanceMeasureView } from '@shopify/react-native-performance';
+
+import { ParamListBase } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
+  BINANCE_API_ENDPOINT,
+  COIN_IMAGE_ENDPOINT,
+} from '../../../constants/endpoints';
+import CryptoLineGraphSekeleton from '../../Loading/CryptoLineChartSekeleton';
+import { showMessage } from 'react-native-flash-message';
+import { COLORS } from '../../../constants/theme';
 type props = {
   coinSymbol: string;
   initialVolume: string;
+  navigation: NativeStackNavigationProp<ParamListBase>;
 };
 
 const CryptoLineGraph: React.FC<props> = React.memo(
-  ({ coinSymbol, initialVolume }) => {
+  ({ navigation, coinSymbol, initialVolume }) => {
     const [chartData, setChartData] = useState<ChartData>({
       labels: [],
       datasets: [
@@ -53,7 +61,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         const { limit, interval } = getIntervalandLimit(timeRange);
 
         const response = await fetch(
-          `https://api.binance.com/api/v3/klines?symbol=${coinSymbol}&interval=${interval}&limit=${limit}`
+          `${BINANCE_API_ENDPOINT}?symbol=${coinSymbol}&interval=${interval}&limit=${limit}`
         );
 
         if (!response.ok) {
@@ -79,8 +87,22 @@ const CryptoLineGraph: React.FC<props> = React.memo(
           { data: data.map((item: any) => parseFloat(item[4])) },
         ];
         setChartData({ labels, datasets });
+
         setLoading(false);
       } catch (error) {
+        showMessage({
+          message: 'Network Error',
+          description: 'Something went wrong, please try again later',
+          type: 'danger',
+          duration: 7000,
+          icon: 'danger',
+          style: {
+            borderRadius: 10,
+            margin: 10,
+            backgroundColor: '#333',
+          },
+        });
+        navigation.navigate('Home');
         console.error('Error fetching data:', error);
       }
     };
@@ -207,7 +229,7 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         <View style={styles.footerContainer}>
           <Image
             source={{
-              uri: `https://coinicons-api.vercel.app/api/icon/${COIN_SYMBOL}`,
+              uri: `${COIN_IMAGE_ENDPOINT}/${COIN_SYMBOL}`,
             }}
             style={styles.footerImage}
           />

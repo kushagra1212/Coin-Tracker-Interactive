@@ -1,20 +1,8 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { ChartData } from '../../../types';
-import {
-  CHART_HEIGHT,
-  CHART_WIDTH,
-} from '../LineChartWithZoom/LineChartWithZoom ';
-import { Animated, PanResponder, View, Dimensions, Text } from 'react-native';
-import {
-  Circle,
-  Defs,
-  LinearGradient,
-  RadialGradient,
-  Rect,
-  Stop,
-  Svg,
-} from 'react-native-svg';
-import { COLORS, FONTS } from '../../../constants/theme';
+import { CHART_WIDTH } from '../LineChartWithZoom/LineChartWithZoom ';
+import { Animated, PanResponder, View } from 'react-native';
+import { LinearGradient, Rect, Stop, Svg } from 'react-native-svg';
 import ToolTip from '../ToolTip/ToolTip';
 import styles from './styles';
 

@@ -1,18 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  Touchable,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
 import { ViewToken } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DataItem, SortBy } from '../../../types';
@@ -21,7 +8,6 @@ import { throttle } from '../../../utils';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ParamListBase, useFocusEffect } from '@react-navigation/native';
 import RenderCoin from '../RenderCoin/RenderCoin';
-import LoadingComponent from '../Loading/Loading';
 import RenderFooter from '../RenderFooter/RenderFooter';
 import { database } from '../../../sqlite-storage/database';
 import { COLORS } from '../../../constants/theme';
@@ -39,6 +25,8 @@ import {
 } from '../../../web-socket/web-socket';
 import CoinListSekeleton from '../../Loading/CoinListSekeleton';
 import CoinListHeader from '../CoinListHeader/CoinListHeader';
+import { showMessage } from 'react-native-flash-message';
+
 type props = {
   navigation: NativeStackNavigationProp<ParamListBase>;
 };
@@ -60,9 +48,9 @@ const CoinList: React.FC<props> = ({ navigation }) => {
   const [initialFetchLoad, setInitialFetchLoad] = useState<
     boolean | undefined
   >();
-  const [loadOtherScreen, setLoadOtherScreen] = useState<boolean>(false);
+
   const [scrollSymbol, setScrollSymbol] = useState<string>('');
-  const windowSize = 50;
+  const windowSize = 500;
   const webSocketHandler = (
     event: WebSocketMessageEvent,
     viewableItems: ViewToken[]
@@ -104,7 +92,7 @@ const CoinList: React.FC<props> = ({ navigation }) => {
     }
   };
 
-  const throttledOnMessage = useCallback(throttle(webSocketHandler, 2000), []);
+  const throttledOnMessage = useCallback(throttle(webSocketHandler, 1000), []);
   const handleOnViewableItemsChanged = (viewableItems: ViewToken[]) => {
     const websocket = getWebSocket();
     if (websocket) {
@@ -140,12 +128,10 @@ const CoinList: React.FC<props> = ({ navigation }) => {
     try {
       setSortBy(sort_by);
       setLoading(true);
-      console.log('fetching data');
       if (start === true) setInitialFetchLoad(true);
       let contentSize = windowSize;
       let startIndex = (current_window - 1) * contentSize;
-      console.log(startIndex, 'startindex');
-      const initalTime = Date.now();
+
       const res = await database.getData(
         sort_by.type,
         sort_by.order,
@@ -173,6 +159,18 @@ const CoinList: React.FC<props> = ({ navigation }) => {
     } catch (err) {
       setLoading(false);
       console.log(err);
+      showMessage({
+        message: 'Network Error',
+        description: 'Something went wrong, please try again later',
+        type: 'danger',
+        duration: 7000,
+        icon: 'danger',
+        style: {
+          borderRadius: 10,
+          margin: 10,
+          backgroundColor: '#333',
+        },
+      });
     }
   };
 
@@ -263,6 +261,7 @@ const CoinList: React.FC<props> = ({ navigation }) => {
       }
     };
   }, []);
+
   useFocusEffect(() => {
     const websocket = getWebSocket();
     if (websocket === null) {
@@ -291,14 +290,10 @@ const CoinList: React.FC<props> = ({ navigation }) => {
           <FlashList
             ref={flatListRef}
             data={coins}
-            // viewabilityConfig={{
-            //   minimumViewTime: 0,
-            //   itemVisiblePercentThreshold: 0,
-            // }}
             onEndReached={fetchNextWindow}
             onViewableItemsChanged={onViewableItemsChanged}
-            onEndReachedThreshold={2}
-            estimatedItemSize={2000}
+            onEndReachedThreshold={10}
+            estimatedItemSize={6000}
             renderItem={renderItemComponent}
             ListFooterComponent={renderFooter}
             keyExtractor={(item, index) => item.symbol}

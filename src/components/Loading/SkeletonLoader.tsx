@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
-import { COLORS } from '../../constants/theme';
 
 const SkeletonLoader = ({
   width = 200,

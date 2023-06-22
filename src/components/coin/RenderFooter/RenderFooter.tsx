@@ -1,10 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import LoadingComponent from '../Loading/Loading';
-import CoinListSekeleton, {
-  CoinCardSekeleton,
-} from '../../Loading/CoinListSekeleton';
-import { COLORS } from '../../../constants/theme';
+import CoinListSekeleton from '../../Loading/CoinListSekeleton';
 import styles from './styles';
 
 type props = {

@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 import CryptoLineGraph from '../components/chart/CryptoLineChart/CryptoLineChart';
 import { COLORS } from '../constants/theme';
+import { RootStackParamList } from '../types';
+
 type props = NativeStackScreenProps<RootStackParamList, 'Coin'>;
 
 const CoinScreen: React.FC<props> = ({ route, navigation }) => {
   const { coinSymbol, initialVolume } = route.params;
+
   useEffect(() => {
     navigation.setOptions({
       headerTitle: coinSymbol.replace('USDT', ''),
@@ -24,7 +26,11 @@ const CoinScreen: React.FC<props> = ({ route, navigation }) => {
     });
   }, []);
   return (
-    <CryptoLineGraph coinSymbol={coinSymbol} initialVolume={initialVolume} />
+    <CryptoLineGraph
+      navigation={navigation}
+      coinSymbol={coinSymbol}
+      initialVolume={initialVolume}
+    />
   );
 };
 

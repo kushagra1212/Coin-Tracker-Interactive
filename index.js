@@ -1,13 +1,10 @@
-/**
- * @format
- */
-import { LogBox } from 'react-native';
 import { AppRegistry } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 import WebSocketConnection from './src/web-socket/WebSocketConnection';
 import { connectToDevTools } from 'react-devtools-core';
-
+import SplashScreen from 'react-native-splash-screen';
+SplashScreen.hide();
 if (!__DEV__) {
   console.log = () => {};
 }
@@ -18,11 +15,13 @@ if (__DEV__) {
     port: 8097,
   });
 }
-const AppWrapper = () => (
-  <>
-    <WebSocketConnection />
-    <App />
-  </>
-);
+const AppWrapper = () => {
+  return (
+    <>
+      <App />
+      <WebSocketConnection />
+    </>
+  );
+};
 
 AppRegistry.registerComponent(appName, () => AppWrapper);

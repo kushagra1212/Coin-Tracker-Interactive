@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text, Touchable, TouchableOpacity, View } from 'react-native';
-import { COLORS, FONTS, SIZES } from '../../../constants/theme';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { COLORS } from '../../../constants/theme';
 import { SortBy } from '../../../types';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import styles from './styles';

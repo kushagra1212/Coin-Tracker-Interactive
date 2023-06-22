@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS, FONTS } from '../../../constants/theme';
+import { COLORS } from '../../../constants/theme';
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
