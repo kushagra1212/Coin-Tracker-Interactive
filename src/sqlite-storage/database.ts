@@ -208,7 +208,8 @@ export class Database {
                 const storedTime = results[0].rows.item(0).storeTime;
                 const currentTime = Date.now();
                 const timeDifference = currentTime - storedTime;
-                const TIME_GAP = 30;
+                const TIME_GAP = 86400000;
+
                 if (timeDifference >= TIME_GAP) {
                   // 24 hours  in milliseconds 86400000
                   console.log('timeDifference', timeDifference);
