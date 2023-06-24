@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/giv_demo"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_dark"
-    android:gravity="center"
     android:orientation="vertical">
-    <!-- 
-    <ImageView
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_marginTop="24dp"
-        android:src="@mipmap/launch_screen" /> -->
 
 
     <pl.droidsonroids.gif.GifImageView
         android:id="@+id/giv_demo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:src="@drawable/animated_splash"
+        android:background="#000000"
     />
 
-</LinearLayout>
+
+</LinearLayout> 

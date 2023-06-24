@@ -72,7 +72,7 @@ export class Database {
             if (this.isValidElement(data[i])) updateData.push(data[i]);
           }
           console.log('data fetched successfully');
-          this.insertData(updateData)
+          this.insertData(0, updateData)
             .then(resolve)
             .catch((error) => {
               console.log('Error inserting data:', error);
@@ -102,39 +102,50 @@ export class Database {
     });
   };
 
-  private insertData(dataArray: DataItem[]): Promise<void> {
+  private insertData(fr: number, dataArray: DataItem[]): Promise<void> {
     console.log('Inserting data...');
 
     return new Promise((resolve, reject) => {
-      this.db
-        .then((tx) => {
-          const placeholders = dataArray
-            .map(() => '(?, CAST(? AS REAL), CAST(? AS REAL))')
-            .join(',');
-          const values = dataArray.flatMap((data) => [
-            data.symbol,
-            data.volume,
-            data.lastPrice,
-          ]);
+      const DB = this.db;
+      function handleInsertData(from: number, dataArray: DataItem[]) {
+        if (from >= dataArray.length) {
+          resolve();
+          return;
+        }
+        let to = Math.min(from + 300, dataArray.length - 1);
+        DB.then((tx) => {
+          let placeholders = '';
+          for (let i = from; i <= to; i++) {
+            placeholders += '(?, CAST(? AS REAL), CAST(? AS REAL))';
+            if (i != to) placeholders += ',';
+          }
+          let values = [];
+          for (let i = from; i <= to; i++) {
+            values.push(dataArray[i].symbol);
+            values.push(dataArray[i].volume);
+            values.push(dataArray[i].lastPrice);
+          }
           const query = `INSERT INTO ${TABLE_NAME} (symbol, volume, lastPrice) VALUES ${placeholders}`;
-
+          console.log(from, to);
           tx.executeSql(
             query,
             values,
             () => {
               console.log('Data inserted successfully');
-              resolve();
+              handleInsertData(to + 1, dataArray);
             },
             (error) => {
               console.log('Error inserting data:', error);
               reject(error);
             }
           );
-        })
-        .catch((err) => {
+        }).catch((err) => {
           console.log('Error inserting data:', err);
           reject(err);
         });
+      }
+
+      handleInsertData(fr, dataArray);
     });
   }
 
@@ -197,7 +208,7 @@ export class Database {
                 const storedTime = results[0].rows.item(0).storeTime;
                 const currentTime = Date.now();
                 const timeDifference = currentTime - storedTime;
-                const TIME_GAP = 300000;
+                const TIME_GAP = 30;
                 if (timeDifference >= TIME_GAP) {
                   // 24 hours  in milliseconds 86400000
                   console.log('timeDifference', timeDifference);

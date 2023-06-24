@@ -25,7 +25,9 @@ import {
   BINANCE_API_ENDPOINT,
   COIN_IMAGE_ENDPOINT,
 } from '../../../constants/endpoints';
-import CryptoLineGraphSekeleton from '../../Loading/CryptoLineChartSekeleton';
+import CryptoLineGraphSekeleton, {
+  LineChartFooterSekeleton,
+} from '../../Loading/CryptoLineChartSekeleton';
 import { showMessage } from 'react-native-flash-message';
 import { COLORS } from '../../../constants/theme';
 type props = {
@@ -252,16 +254,18 @@ const CryptoLineGraph: React.FC<props> = React.memo(
         <View style={styles.container}>
           <CoinLineChartHeader />
           {/* Line Chart */}
-          {!loading ? (
-            <LineGraphWithZoom chartData={chartData} />
-          ) : (
-            <LineGraphSkeleton
-              width={Dimensions.get('window').width}
-              height={500}
-              duration={500}
-              lineColor={`rgba(255, 40, 40, 0.3)`}
-            />
-          )}
+          <View style={{ height: 500 }}>
+            {!loading ? (
+              <LineGraphWithZoom chartData={chartData} />
+            ) : (
+              <LineGraphSkeleton
+                width={Dimensions.get('window').width}
+                height={500}
+                duration={500}
+                lineColor={`rgba(255, 40, 40, 0.3)`}
+              />
+            )}
+          </View>
           {/* Time Range Buttons */}
           <View style={styles.timeRangeContainer}>
             <FlatList

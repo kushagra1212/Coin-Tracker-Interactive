@@ -26,6 +26,7 @@ import PerformanceComponent, {
   IRef,
 } from './src/components/common/PerformanceComponent';
 import { RootStackParamList } from './src/types';
+import { NativeModules } from 'react-native';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
@@ -69,7 +70,9 @@ function App(): JSX.Element {
     };
   }, []);
   useEffect(() => {
-    // if (!appLoad) SplashScreen.hide();
+    if (!appLoad) {
+      NativeModules.GifDrawableModule.hide();
+    }
   }, [appLoad]);
   if (appLoad) {
     return (

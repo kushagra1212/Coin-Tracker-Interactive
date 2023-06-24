@@ -4,22 +4,9 @@ import { FlatList } from 'react-native';
 import LineGraphSkeleton from './LineChartSekeleton';
 import { COLORS } from '../../constants/theme';
 import { TIME_RANGE_LIST } from '../../utils';
-
-const CryptoLineGraphSekeleton = () => {
+export const LineChartFooterSekeleton = () => {
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <View style={styles.headerContent}>
-          <SkeletonLoader height={50} width={300} />
-          <SkeletonLoader height={20} width={200} roundness={4} />
-        </View>
-      </View>
-      <LineGraphSkeleton
-        width={Dimensions.get('window').width}
-        height={500}
-        duration={500}
-        lineColor={`rgba(255, 40, 40, 0.3)`}
-      />
+    <View>
       <View style={styles.timeRangeContainer}>
         <FlatList
           data={TIME_RANGE_LIST}
@@ -46,6 +33,28 @@ const CryptoLineGraphSekeleton = () => {
           </View>
         </View>
       </View>
+    </View>
+  );
+};
+const CryptoLineGraphSekeleton = () => {
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <View style={styles.headerContent}>
+          <SkeletonLoader height={50} width={300} />
+          <SkeletonLoader height={20} width={200} roundness={4} />
+        </View>
+      </View>
+      <View>
+        <LineGraphSkeleton
+          width={Dimensions.get('window').width}
+          height={500}
+          duration={500}
+          lineColor={`rgba(255, 40, 40, 0.3)`}
+        />
+      </View>
+
+      <LineChartFooterSekeleton />
     </View>
   );
 };

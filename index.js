@@ -3,8 +3,7 @@ import App from './App';
 import { name as appName } from './app.json';
 import WebSocketConnection from './src/web-socket/WebSocketConnection';
 import { connectToDevTools } from 'react-devtools-core';
-import SplashScreen from 'react-native-splash-screen';
-SplashScreen.hide();
+
 if (!__DEV__) {
   console.log = () => {};
 }
@@ -15,6 +14,7 @@ if (__DEV__) {
     port: 8097,
   });
 }
+
 const AppWrapper = () => {
   return (
     <>
