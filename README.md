@@ -1,4 +1,4 @@
-# Coin-Tracker-Interactive <img align='center' src='https://firebasestorage.googleapis.com/v0/b/eimentum.appspot.com/o/coinTracker%2Fapp%20Icon.png?alt=media&token=7516a8aa-3cb5-440b-9d3b-f6eefd4a9753' width="50">
+# Coin-Tracker-Interactive <img align='center' src='https://firebasestorage.googleapis.com/v0/b/eimentum.appspot.com/o/coinTracker%2Fapp%20Icon.png?alt=media&token=7516a8aa-3cb5-440b-9d3b-f6eefd4a9753' width="50" style="border-radius:30px">
 
 CoinTracker is a React Native app that allows you to track and monitor various cryptocurrencies. It provides a list of crypto coins along with their volume, price, name, and symbol. You can sort the list based on volume and last price in increasing or decreasing order. The app also utilizes sockets to provide a real-time experience. Additionally, when you click on a coin from the list, an interactive graph with options for day, month, 6 months, year, and all-time data will be displayed.
 
