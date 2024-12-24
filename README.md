@@ -8,10 +8,11 @@ Figure 1: Coin List screen displaying the list of crypto coins
 
 <div align="left" style="display: flex; flex-direction: column;">
     <div style="display: flex; justify-content: center; gap: 20px;">
-        <img src="https://firebasestorage.googleapis.com/v0/b/eimentum.appspot.com/o/coinTracker%2FWhatsApp%20Image%202023-06-24%20at%202.27.53%20PM.jpeg?alt=media&token=d2b85ba3-9a98-4a7f-8b37-9be2eeed65cb" width="400" alt="Image 1">
-        <img src="https://firebasestorage.googleapis.com/v0/b/eimentum.appspot.com/o/coinTracker%2FWhatsApp%20Image%202023-06-24%20at%202.28.03%20PM.jpeg?alt=media&token=88331f0b-bc89-44df-bfcf-1c1ea5f7ee9b" width="400" alt="Image 2">
+        <video src="https://github.com/user-attachments/assets/e8cb75cc-bf91-4408-ad12-051cca1203ac" > width="400" alt="Image 1">
     </div>
 </div>
+
+
 
 Figure 2: Graph View screen displaying the interactive graph for a selected coin
 
