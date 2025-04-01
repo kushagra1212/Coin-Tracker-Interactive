@@ -68,6 +68,11 @@ To run CoinTracker locally on your Android device, follow the steps below:
 
    This will install the app on your device or emulator and launch it.
 
+## Tech 
+
+-  React Native
+-  sqlite
+
 ## Usage
 
 Once the CoinTracker app is running on your Android device, you can perform the following actions:
