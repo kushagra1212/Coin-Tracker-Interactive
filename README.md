@@ -16,6 +16,12 @@ Figure 1: Coin List screen displaying the list of crypto coins
 
 Figure 2: Graph View screen displaying the interactive graph for a selected coin
 
+## Tech 
+
+-  React Native
+-  sqlite
+
+
 ## Installation
 
 To run CoinTracker locally on your Android device, follow the steps below:
@@ -68,10 +74,6 @@ To run CoinTracker locally on your Android device, follow the steps below:
 
    This will install the app on your device or emulator and launch it.
 
-## Tech 
-
--  React Native
--  sqlite
 
 ## Usage
 
